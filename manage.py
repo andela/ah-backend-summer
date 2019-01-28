@@ -3,7 +3,13 @@ import os
 import sys
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings")
+    environment = os.environ.get('ENVIRONMENT', 'production')
+    if environment == 'development':
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.development")
+    elif environment == 'staging':
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.staging")
+    else:
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.production")
     try:
         from django.core.management import execute_from_command_line
     except ImportError:
