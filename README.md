@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-backend-summer/badge.svg?t=zy0apD)](https://coveralls.io/github/andela/ah-backend-summer)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 
