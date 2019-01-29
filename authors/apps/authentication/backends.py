@@ -8,3 +8,6 @@
 
 """Configure JWT Here"""
 
+class JWTAuthentication:
+    pass
+
