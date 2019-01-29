@@ -1,4 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/github/andela/ah-backend-summer/badge.svg?branch=develop)](https://coveralls.io/github/andela/ah-backend-summer?branch=develop)
+[![Maintainability](https://api.codeclimate.com/v1/badges/27123e7f01956befbc23/maintainability)](https://codeclimate.com/github/andela/ah-backend-summer/maintainability)
 
 # Authors Haven - A Social platform for the creative at heart.
 
