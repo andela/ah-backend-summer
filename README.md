@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/andela/ah-backend-summer.svg?branch=ch-integrate-travisCI-with-readme-badge-163383166)](https://travis-ci.org/andela/ah-backend-summer)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 
