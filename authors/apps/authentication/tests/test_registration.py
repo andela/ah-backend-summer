@@ -1,10 +1,10 @@
 """Tests for user registration"""
 import json
 from rest_framework import status
-from .test_data import (valid_register_data, register_short_password,
-                        register_no_email, register_no_password,
-                        register_no_username, register_invalid_email,
-                        register_no_username_password_email)
+from .test_data.register_data import (valid_register_data, register_short_password,
+                                      register_no_email, register_no_password,
+                                      register_no_username, register_invalid_email,
+                                      register_no_username_password_email)
 from .base_class import BaseTest
 
 
