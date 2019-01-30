@@ -9,6 +9,6 @@ from .models import User
 """Configure JWT Here"""
 
 
-class JWTAuthentication:
+class JWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         pass
