@@ -2,7 +2,13 @@
 import os
 import sys
 
+from dotenv import load_dotenv, find_dotenv
+
 if __name__ == "__main__":
+
+    # load environment variables from an optional .env file
+    load_dotenv(find_dotenv())
+
     environment = os.environ.get('ENVIRONMENT', 'production')
     if environment == 'development':
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.development")
