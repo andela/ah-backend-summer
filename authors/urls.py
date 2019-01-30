@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib import admin
+from authors.apps.core.documentation import schema_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('authors.apps.authentication.urls', namespace='authentication')),
+    path('api/', include('authors.apps.authentication.urls',
+                         namespace='authentication')),
+    path('', schema_view.with_ui('swagger'), name='schema-swagger-ui')
 ]
-
