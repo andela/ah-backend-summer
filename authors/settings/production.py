@@ -11,3 +11,6 @@ DEBUG = False
 DATABASES = {
     'default': dj_database_url.config(env='DATABASE_URL', engine='django.db.backends.postgresql')
 }
+
+# allow static file compression
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
