@@ -11,6 +11,11 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+# load environment variables from an optional .env file
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
+
 environment = os.environ.get('ENVIRONMENT', 'production')
 if environment == 'development':
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.development")

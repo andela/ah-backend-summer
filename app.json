@@ -7,6 +7,9 @@
   "env": {
     "STAGING_DATABASE_URL": {
       "required": true
+    },
+    "SECRET_KEY": {
+      "required": true
     }
   },
   "formation": {},
