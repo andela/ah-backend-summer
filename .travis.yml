@@ -14,9 +14,6 @@ before script:
   - psql -c "create database ahsummerdb;" -U postgres
 
 script:
-  - python manage.py test
-  - coverage
-  - coveralls
-
-after success:
+  - coverage run --omit="*wsgi*,*production*," --source="authors" manage.py test
+  - coverage report -m
   - coveralls

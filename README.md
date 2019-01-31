@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/andela/ah-backend-summer.svg?branch=ch-integrate-travisCI-with-readme-badge-163383166)](https://travis-ci.org/andela/ah-backend-summer)
-
 [![Coverage Status](https://coveralls.io/repos/github/andela/ah-backend-summer/badge.svg?branch=develop)](https://coveralls.io/github/andela/ah-backend-summer?branch=develop)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27123e7f01956befbc23/maintainability)](https://codeclimate.com/github/andela/ah-backend-summer/maintainability)
 
