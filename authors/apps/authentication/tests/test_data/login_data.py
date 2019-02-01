@@ -3,13 +3,13 @@
 valid_login_data = {
     'user': {
         'email': 'abc@abc.com',
-        'password': 'ia83na.JS'
+        'password': 'ia83naJS'
     }
 }
 
 login_no_email = {
     'user': {
-        'password': 'ia83na.JS'
+        'password': 'ia83naJS'
     }
 }
 
@@ -22,14 +22,14 @@ login_no_password = {
 login_invalid_email = {
     'user': {
         'email': 'abc.com',
-        'password': 'ia83na.JS'
+        'password': 'ia83naoJS'
     }
 }
 
 login_unregistered_email = {
     'user': {
         'email': 'abcjajs@abc.com',
-        'password': 'ia83na.JS'
+        'password': 'ia83naJS'
     }
 }
 

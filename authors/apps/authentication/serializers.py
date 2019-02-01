@@ -1,6 +1,9 @@
+import re
+
 from django.contrib.auth import authenticate
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .models import User
 
@@ -29,6 +32,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
 
+    def validate_password(self, password):
+        if not re.compile(r'^[0-9a-zA-Z]*$').match(password):
+            raise ValidationError("Password must contain alphanumeric characters only")
+        return password
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
@@ -42,28 +50,12 @@ class LoginSerializer(serializers.Serializer):
         # user in, this means validating that they've provided an email
         # and password and that this combination matches one of the users in
         # our database.
-        email = data.get('email', None)
-        password = data.get('password', None)
-
-        # As mentioned above, an email is required. Raise an exception if an
-        # email is not provided.
-        if email is None:
-            raise serializers.ValidationError(
-                'An email address is required to log in.'
-            )
-
-        # As mentioned above, a password is required. Raise an exception if a
-        # password is not provided.
-        if password is None:
-            raise serializers.ValidationError(
-                'A password is required to log in.'
-            )
 
         # The `authenticate` method is provided by Django and handles checking
         # for a user that matches this email/password combination. Notice how
         # we pass `email` as the `username` value. Remember that, in our User
         # model, we set `USERNAME_FIELD` as `email`.
-        user = authenticate(username=email, password=password)
+        user = authenticate(username=data.get('email'), password=data.get('password'))
 
         # If no user was found matching this email/password combination then
         # `authenticate` will return `None`. Raise an exception in this case.
@@ -143,3 +135,8 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+    def validate_password(self, password):
+        if not re.compile(r'^[0-9a-zA-Z]*$').match(password):
+            raise ValidationError("Password must contain alphanumeric characters only")
+        return password
