@@ -109,6 +109,7 @@ class User(AbstractBaseUser, PermissionsMixin):
       """
       return self.username
 
+    @property
     def get_short_name(self):
         """
         This method is required by Django for things like handling emails.
@@ -116,5 +117,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
+        
+    @property
+    def token(self):
+        """
+        This method will return a user token
+        """
+        return self.token_generator()
+        
+    def token_generator(self):
+        """
+        This method is generates for a user a token
+        It sets an expairation period to 30days
+        decodes the returned token to a utf-8
+        """
+        exp_period = datetime.now() + timedelta(days=30)
+        token = jwt.encode({
+            'id': self.pk,
+            'exp': int(exp_period.strftime('%s'))
+        }, settings.SECRET_KEY, algorithm='HS256')
+        return token.decode('utf-8')
 
 
