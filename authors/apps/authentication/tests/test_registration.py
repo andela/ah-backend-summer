@@ -4,7 +4,7 @@ from rest_framework import status
 from .test_data.register_data import (valid_register_data, register_short_password,
                                       register_no_email, register_no_password,
                                       register_no_username, register_invalid_email,
-                                      register_no_username_password_email)
+                                      register_no_username_password_email, register_invalid_password)
 from .base_class import BaseTest
 
 
@@ -28,6 +28,16 @@ class RegistrationTest(BaseTest):
         response = self.client.post(self.url_register,
                                     data=json.dumps(
                                         register_short_password),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIsNotNone(response.data["errors"]["password"])
+
+    def test_user_register_password_invalid_characters(self):
+        """Test user registration fails with invalid characters in password"""
+        response = self.client.post(self.url_register,
+                                    data=json.dumps(
+                                        register_invalid_password),
                                     content_type='application/json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

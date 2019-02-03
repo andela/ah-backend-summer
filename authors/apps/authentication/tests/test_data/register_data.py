@@ -3,7 +3,7 @@ valid_register_data = {
     'user': {
         'email': 'abc@abc.com',
         'username': 'abc123',
-        'password': 'ia83na.JS'
+        'password': 'ia83naJS'
     }
 }
 
@@ -12,6 +12,14 @@ register_short_password = {
         'email': 'abc@abc.com',
         'username': 'abc123',
         'password': 'gsh'
+    }
+}
+
+register_invalid_password = {
+    'user': {
+        'email': 'abc@abc.com',
+        'username': 'abc123',
+        'password': 'gsh/sd]sd'
     }
 }
 
@@ -45,6 +53,6 @@ register_invalid_email = {
     'user': {
         'email': 'abc.com',
         'username': 'abc123',
-        'password': 'ia83na.JS'
+        'password': 'ia83naJS'
     }
 }
