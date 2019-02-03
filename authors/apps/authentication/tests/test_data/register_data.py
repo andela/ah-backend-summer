@@ -56,3 +56,6 @@ register_invalid_email = {
         'password': 'ia83naJS'
     }
 }
+
+expired_link = '/api/v1/users/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NTgsImV4cCI6MTU0OTIwMTQ3OX0.2kZDXpwA8SKbcakzhofPC0nYLagSd1ISp9JNWo5C3as/'
+invalid_link = '/api/v1/users/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ8.eyJpZCI6NTgsImV4cCI6MTU0OTIwMTQ3OX0.2kZDXpwA8SKbcakzhofPC0nYLagSd1ISp9JNWo5C3as/'

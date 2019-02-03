@@ -5,6 +5,7 @@ from authors.apps.authentication.tests.test_data.register_data \
     import valid_register_data
 from authors.apps.authentication.tests.test_data.login_data \
     import valid_login_data
+from authors.apps.authentication.models import User
 
 
 class BaseTest(APITestCase):
@@ -12,9 +13,10 @@ class BaseTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.client = APIClient()
-        cls.client.post(reverse("authentication:register"),
-                        data=json.dumps(valid_register_data),
-                        content_type="application/json")
+        User.objects.create_user(
+                                    username='abc123',
+                                    email='abc@abc.com',
+                                    password='ia83naJS')
         response = cls.client.post(reverse("authentication:login"),
                                    data=json.dumps(valid_login_data),
                                    content_type="application/json")

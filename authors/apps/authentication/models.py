@@ -11,6 +11,7 @@ from authors.apps.profiles.models import Profile
 from django.db.models.signals import post_save
 
 
+
 class UserManager(BaseUserManager):
     """
     Django requires that custom users define their own Manager class. By
@@ -37,6 +38,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, email, password):
         """
         Create and return a `User` with superuser powers.
+
         Superuser powers means that this use is an admin that can do anything
         they want.
         """
@@ -138,6 +140,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         }, settings.SECRET_KEY, algorithm='HS256')
         return token.decode('utf-8')
 
+    @staticmethod
+    def decode_token(token):
+        try:
+            payload = jwt.decode(
+                    token, settings.SECRET_KEY, algorithms=['HS256'])
+            return payload['id']
+        except jwt.ExpiredSignatureError:
+            return 'Token expired'
+        except jwt.InvalidTokenError:
+            return 'Invalid token'
+
 
 def profile_post_save_reciever(*args, **kwargs):
     # Updates username when user update's their profile's username
@@ -146,5 +159,5 @@ def profile_post_save_reciever(*args, **kwargs):
     user.username = profile.username
     user.save(update_fields=['username'])
 
-
 post_save.connect(profile_post_save_reciever, sender=Profile)
+
