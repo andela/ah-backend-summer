@@ -12,20 +12,21 @@ from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from ..core.password_reset_manager import PasswordResetManager
 
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
+    PasswordResetRequestSerializer, PasswordResetSerializer,
     TwitterAuthSerializer, GoogleFacebookAuthSerializer
 )
+import os
 import twitter
 import facebook
-
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from .social_login import(login_or_register_social_user)
 from .models import User
-
 
 class RegistrationAPIView(GenericAPIView):
     # Allow any user (authenticated or not) to hit this endpoint.
@@ -147,7 +148,6 @@ class LoginAPIView(GenericAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
     renderer_classes = (UserJSONRenderer,)
@@ -174,7 +174,6 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class TwitterAuthAPIView(GenericAPIView):
     """
@@ -215,7 +214,6 @@ class TwitterAuthAPIView(GenericAPIView):
 
         return login_or_register_social_user(twitter_user)
 
-
 class GoogleAuthAPIView(GenericAPIView):
     """
     Handle login of a Google user via the Google oauth2. 
@@ -245,7 +243,6 @@ class GoogleAuthAPIView(GenericAPIView):
 
         return login_or_register_social_user(google_user)
 
-
 class FacebookAuthAPIView(GenericAPIView):
     """
     Handle login of a Facebook user via the Facebook Graph API. 
@@ -271,3 +268,65 @@ class FacebookAuthAPIView(GenericAPIView):
         facebook_user = graph.get_object(id='me', fields='email, name')
 
         return login_or_register_social_user(facebook_user)
+
+class PasswordResetRequestAPIView(GenericAPIView):
+    """
+    This handles receiving the requester's email address and sends
+    a password reset email
+    """
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request):
+        user = request.data.get(
+            'user', {}) if 'user' in request.data else request.data
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        user_email = user.get("email", None)
+        PasswordResetManager(request).send_password_reset_email(user_email)
+        return Response(
+            {
+                "message":"An email has been sent to your mailbox with instructions to reset your password",
+            },
+            status=status.HTTP_200_OK
+        )
+
+class PasswordResetAPIView(GenericAPIView):
+    """
+    This handles verification of reset link and updates password field
+    with new password
+    """
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = PasswordResetSerializer
+
+    def get(self, request, token):
+        user = PasswordResetManager(request).get_user_from_encoded_token(token)
+        if user is None:
+            return Response({"message":"Invalid token!"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {
+                "message":"Token is valid. OK to send new password information"
+            },
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request, token):
+        data = request.data.get(
+            'user', {}) if 'user' in request.data else request.data
+        print(data)
+        user = PasswordResetManager(request).get_user_from_encoded_token(token)
+        if user is None:
+            return Response(
+                {
+                    "message":"Your token has expired. Please start afresh."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            ) 
+        email = user.get('email')
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        new_password = data.get("new_password")
+        PasswordResetManager(request).update_password(email, new_password)
+        return Response({"message":"Your password has been reset"} , status=status.HTTP_200_OK)
