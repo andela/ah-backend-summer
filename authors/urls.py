@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from authors.apps.core.documentation import schema_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('authors.apps.authentication.urls', namespace='authentication')),
+    path('api/v1/profiles/', include('authors.apps.profiles.urls', namespace='profiles')),
     path('', schema_view.with_ui('swagger'), name='schema-swagger-ui')
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

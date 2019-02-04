@@ -1,4 +1,5 @@
 import dj_database_url
+import os
 
 from .base import *
 
@@ -11,3 +12,5 @@ DEBUG = True
 DATABASES = {
     'default': dj_database_url.config(env='DEVELOPMENT_DATABASE_URL', engine='django.db.backends.postgresql')
 }
+
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'media')
