@@ -6,8 +6,19 @@ from rest_framework.views import APIView
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer,
+    TwitterAuthSerializer, GoogleFacebookAuthSerializer
 )
+
+import os
+import twitter
+
+import facebook
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+from .social_login import(login_or_register_social_user)
 
 
 class RegistrationAPIView(GenericAPIView):
@@ -75,3 +86,100 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TwitterAuthAPIView(GenericAPIView):
+    """
+    Handle login of a Twitter user via the Twitter Api. 
+    The Twitter Api takes parameters of consummer key, consumer secret,
+    access token and access token secret. It then verifies the credentials
+    and returns the twitter user information
+
+    login_or_register_social_user method, takes in twitter user object and
+    verifies if the user is already in the database and returns logged in user
+    with a login token if user exists in database. Else, it registers the user
+    and logs in the user
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = TwitterAuthSerializer
+
+    def post(self, request):
+        """This method returns a logged in Twitter user"""
+        access_token = request.data.get('access_token', {})
+        access_token_secret = request.data.get('access_token_secret', {})
+
+        serializer = self.serializer_class(data={'access_token': access_token,
+                                                 'access_token_secret': access_token_secret
+                                                 })
+        serializer.is_valid(raise_exception=True)
+
+        # verify and return twitter user information
+        twitter_client_key = os.getenv('TWITTER_OAUTH1_KEY')
+        twitter_client_secret = os.getenv('TWITTER_OAUTH1_SECRET')
+
+        api = twitter.Api(consumer_key=twitter_client_key,
+                          consumer_secret=twitter_client_secret,
+                          access_token_key=access_token,
+                          access_token_secret=access_token_secret)
+
+        twitter_user = api.VerifyCredentials(include_email="true")
+        twitter_user = twitter_user.__dict__
+
+        return login_or_register_social_user(twitter_user)
+
+
+class GoogleAuthAPIView(GenericAPIView):
+    """
+    Handle login of a Google user via the Google oauth2. 
+    id_token is an open id that allows Clients to verify the identity of the 
+    End-User based on the authentication performed by an Authorization Server, 
+    as well as to obtain basic profile information about the End-User in an 
+    interoperable and REST-like manner.
+
+    login_or_register_social_user method, takes in google user object and
+    verifies if the user is already in the database and returns logged in user
+    with a login token if user exists in database. Else, it registers the user
+    and logs in the user
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = GoogleFacebookAuthSerializer
+
+    def post(self, request):
+        """This method returns a logged in Google user"""
+        access_token = request.data.get('access_token', {})
+
+        serializer = self.serializer_class(data={'access_token': access_token})
+        serializer.is_valid(raise_exception=True)
+
+        # verify and return google user information
+        google_user = id_token.verify_oauth2_token(
+            access_token, requests.Request())
+
+        return login_or_register_social_user(google_user)
+
+
+class FacebookAuthAPIView(GenericAPIView):
+    """
+    Handle login of a Facebook user via the Facebook Graph API. 
+    The Graph API returns a graph object that contains user information
+
+    login_or_register_social_user method, takes in Facebook user object and
+    verifies if the user is already in the database and returns logged in user
+    with a login token if user exists in database. Else, it registers the user
+    and logs in the user
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = GoogleFacebookAuthSerializer
+
+    def post(self, request):
+        """This method returns a logged in Facebook user"""
+        access_token = request.data.get('access_token', {})
+
+        serializer = self.serializer_class(data={'access_token': access_token})
+        serializer.is_valid(raise_exception=True)
+
+        # verify and return facebook user information
+        graph = facebook.GraphAPI(access_token=access_token)
+        facebook_user = graph.get_object(id='me', fields='email, name')
+
+        return login_or_register_social_user(facebook_user)

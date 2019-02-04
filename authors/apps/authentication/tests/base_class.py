@@ -17,6 +17,9 @@ class BaseTest(APITestCase):
         self.url_register = reverse('authentication:register')
         self.url_login = reverse('authentication:login')
         self.url_user_detail = reverse('authentication:retrieve_update')
+        self.url_twitter = reverse('authentication:twitter-auth')
+        self.url_google = reverse('authentication:google-auth')
+        self.url_facebook = reverse('authentication:facebook-auth')
 
     def register_test_user(self):
         self.client.post(self.url_register,
