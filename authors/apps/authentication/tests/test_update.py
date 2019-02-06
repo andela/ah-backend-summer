@@ -12,7 +12,7 @@ class UpdateTest(BaseTest):
 
     def setUp(self):
         super().setUp()
-        self.url_update = reverse('authentication:retrieve_update')
+        self.url_update = reverse('authentication:retrieve-update')
         self.url_login = reverse('authentication:login')
 
     def test_user_can_successfully_update_email(self):
