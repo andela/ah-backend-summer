@@ -13,13 +13,6 @@ def login_or_register_social_user(social_user):
     # find user in database
     try:
         user = User.objects.get(email=social_user.get('email'))
-        # print(user)
-        return Response({'user': {
-            'email': social_user.get('email'),
-            'username': social_user.get('name'),
-            'token': user.token_generator()
-        }
-        }, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         new_password = User.objects.make_random_password()
         new_social_user = {
@@ -27,11 +20,11 @@ def login_or_register_social_user(social_user):
             'username': social_user.get('name'),
             'password': new_password
         }
-        new_user_profile = User.objects.create_user(**new_social_user)
+        user = User.objects.create_user(**new_social_user)
 
-        return Response({'user': {
-            'email': social_user.get('email'),
-            'username': social_user.get('name'),
-            'token': new_user_profile.token_generator()
-        }
-        }, status=status.HTTP_201_CREATED)
+    return Response({'user': {
+        'email': social_user.get('email'),
+        'username': social_user.get('name'),
+        'token': user.token_generator()
+    }
+    }, status=status.HTTP_200_OK)

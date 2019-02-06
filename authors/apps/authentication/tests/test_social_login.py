@@ -114,7 +114,7 @@ class TwitterAuthTest(BaseTest):
                                     data=json.dumps(
                                         valid_twitter_token),
                                     content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @patch('twitter.Api.VerifyCredentials')
     def test_twitter_login_user_not_new(self, TwitterCredentials):
@@ -148,7 +148,7 @@ class GoogleAuthTest(BaseTest):
                                     data=json.dumps(
                                         valid_google_token),
                                     content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @patch('google.oauth2.id_token.verify_oauth2_token')
     def test_google_login_successful_user_not_new(self, verify_google_oauth2_token):
@@ -211,7 +211,7 @@ class FacebookAuthTest(BaseTest):
                                     data=json.dumps(
                                         valid_facebook_token),
                                     content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @patch('facebook.GraphAPI.get_object')
     def test_facebook_login_not_new_user_successful(self, user_object):
