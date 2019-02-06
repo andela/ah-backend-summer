@@ -1,5 +1,6 @@
 """Tests for user login"""
 import json
+from django.core import mail
 from rest_framework import status
 from .test_data.login_data import (valid_login_data, login_no_email,
                                    login_no_password, login_unregistered_email,
@@ -9,13 +10,10 @@ from .base_class import BaseTest
 
 
 class LoginTest(BaseTest):
-    def setUp(self):
-        super().setUp()
-        self.register_test_user()
 
     def test_login_successful(self):
         """Test user login passes with correct user credentials"""
-
+        self.register_and_activate_test_user()
         response = self.client.post(self.url_login,
                                     data=json.dumps(
                                         valid_login_data),

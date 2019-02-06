@@ -137,3 +137,10 @@ REST_FRAMEWORK = {
 }
 
 MEDIA_URL = '/media/'
+# For Gmail or google Apps
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.getenv('USER_EMAIL')
+EMAIL_HOST_PASSWORD = os.getenv('USER_PASSWORD')
+EMAIL_PORT = 587
+

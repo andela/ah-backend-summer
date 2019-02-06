@@ -2,6 +2,7 @@ import json
 import os
 
 from django.test import TestCase
+from django.core import mail
 from django.urls import reverse
 
 from rest_framework.test import APIClient
@@ -20,12 +21,18 @@ class TestUserJwtAuthentication (BaseTest):
     """
 
     def test_user_login(self):
-        self.client.post(self.url_register, data=json.dumps(
-            register_data.valid_register_data), 
-            content_type='application/json')
-        response = self.client.post(reverse('authentication:login'), 
-        data=json.dumps(
-            login_data.valid_login_data), content_type='application/json')
+        self.register_test_user()
+        activation_link = (mail.outbox[0].body.split('\n')).pop(1)
+        url = activation_link.split("testserver").pop(1)
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(
+                    response.data['msg'],
+                    "Your account is activated, enjoy")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(
+                                reverse('authentication:login'),
+                                data=json.dumps(login_data.valid_login_data),
+                                content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('token', response.data)
 
@@ -34,7 +41,7 @@ class TestUserJwtAuthentication (BaseTest):
             register_data.valid_register_data), 
             content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('token', response.data)
+        self.assertIn('email', response.data)
 
     def test_missing_token_and_bearer_prefix(self):
         response = self.client.post(self.url_user_detail,
