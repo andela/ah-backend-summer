@@ -3,7 +3,8 @@ import json
 from django.core import mail
 
 from authors.apps.authentication.models import User
-from authors.apps.authentication.tests.test_data.login_data import valid_login_data
+from authors.apps.authentication.tests.test_data.login_data import (
+    valid_login_data)
 from .test_data.register_data import valid_register_data
 
 from rest_framework.test import APITestCase, APIClient
@@ -24,16 +25,16 @@ class BaseTest(APITestCase):
 
     def register_test_user(self):
         """
-        Method that registers a test user 
+        Method that registers a test user
         """
         response = self.client.post(self.url_register, data=json.dumps(
-                        valid_register_data), content_type='application/json')
+            valid_register_data), content_type='application/json')
         return response
 
     def register_and_activate_test_user(self):
         """
-        Method that registers a user and uses the outbox method of django's 
-        email services to access the sent email and extract the url from the 
+        Method that registers a user and uses the outbox method of django's
+        email services to access the sent email and extract the url from the
         sent link.
         """
         self.register_test_user()
@@ -48,12 +49,18 @@ class BaseTest(APITestCase):
         """
         self.register_and_activate_test_user()
         response = self.client.post(self.url_login, data=valid_login_data,
-                                content_type='application/json')
-        print(response.data)
-        self.client.credentials(HTTPS_AUTHORIZATION=f'Bearer {token}')
+                                    format='json')
+        token = response.data['token']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
     def activated_user(self):
         return User.objects.create_user(
-                                    username='abc123',
-                                    email='abc@abc.com',
-                                    password='ia83naJS')
+            username='abc123',
+            email='abc@abc.com',
+            password='ia83naJS')
+
+    def create_another_user_in_db(self):
+        return User.objects.create_user(
+            username='roger',
+            email='roger@mail.com',
+            password='ia83naJS')

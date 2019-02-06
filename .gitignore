@@ -92,3 +92,6 @@ ENV/
 # SQLite3
 db.sqlite3
 .vscode
+
+# Ignore profile images
+media/profile/*
