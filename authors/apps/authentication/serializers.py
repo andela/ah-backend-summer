@@ -8,6 +8,14 @@ from rest_framework.exceptions import ValidationError
 from .models import User
 
 
+@staticmethod
+def check_password(password):
+    if not re.compile(r'^[0-9a-zA-Z]*$').match(password):
+        raise ValidationError(
+            "Password must contain alphanumeric characters only")
+    return password
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
@@ -34,10 +42,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
     def validate_password(self, password):
-        if not re.compile(r'^[0-9a-zA-Z]*$').match(password):
-            raise ValidationError(
-                "Password must contain alphanumeric characters only")
-        return password
+        return check_password(password)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -139,10 +144,7 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def validate_password(self, password):
-        if not re.compile(r'^[0-9a-zA-Z]*$').match(password):
-            raise ValidationError(
-                "Password must contain alphanumeric characters only")
-        return password
+        return check_password(password)
 
 
 class TwitterAuthSerializer(serializers.Serializer):
