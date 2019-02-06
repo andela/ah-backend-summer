@@ -38,3 +38,6 @@ plugins:
 exclude_patterns:
   - "**/tests/"
   - "**/migrations/"
+  - "**/settings/"
+  - "*/wsgi.py"
+  - "manage.py"
