@@ -6,14 +6,37 @@ from ..profiles import models as ProfileModel
 from .utils import utils
 
 
+class ArticleManager(models.Manager):
+    """
+    ArticleManager class is a custom Article model manager
+    """
+
+    def toggle_favorite(self, user, article):
+        """
+        toggle_favorite method adds user to favorited_by if they favorite an
+        article or removes user from favorited_by if the unfavorite an article
+        """
+        if user in article.favorited_by.all():
+            article.favorited_by.remove(user)
+            message = "You have unfavorited this article"
+        else:
+            article.favorited_by.add(user)
+            message = "You have favorited this article"
+        article.favoritesCount = article.favorited_by.all().count()
+        article.save()
+        return message
+
+
 class Article(models.Model):
     """The Article class model defines the Article table model in the DB
     """
     title = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)
     description = models.CharField(max_length=100)
+    favorited_by = models.ManyToManyField(ProfileModel.Profile,
+                                          blank=True,
+                                          related_name="favorited_by")
     favoritesCount = models.IntegerField(default=0)
-    favorited = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     image = models.ImageField(
@@ -30,6 +53,8 @@ class Article(models.Model):
     disliked_by = models.ManyToManyField(to=settings.AUTH_USER_MODEL,
                                          related_name='disliked_articles',
                                          related_query_name='disliked_article')
+
+    objects = ArticleManager()
 
     class Meta:
         """Meta class difines extra functions to be ran on the DB

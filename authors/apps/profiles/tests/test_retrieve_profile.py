@@ -11,7 +11,7 @@ class TestRetrieveProfile(BaseTest):
         response = self.client.get(self.url,
                                    HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["username"],
+        self.assertEqual(response.data["profile"]["username"],
                          valid_register_data["user"]["username"])
 
     def test_unauthenticated_user_cannot_retrieve_profile(self):
@@ -19,8 +19,12 @@ class TestRetrieveProfile(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_retrieve_profile_that_does_not_exist(self):
-        response = self.client.get("api/profiles/ajfgdjga")
+        response = self.client.get(reverse("profiles:profile-detail-update",
+                                           kwargs={"username": "kdks"}),
+                                   HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data["error"],
+                         "Profile with this username does not exist")
 
     # Integration tests
     def test_can_retrieve_profile_for_different_user(self):
@@ -32,4 +36,4 @@ class TestRetrieveProfile(BaseTest):
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["username"], username)
+        self.assertEqual(response.data["profile"]["username"], username)

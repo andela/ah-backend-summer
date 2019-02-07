@@ -182,6 +182,13 @@ class TestArticleView(base_class.BaseTest):
         self.assertDictEqual(expected_dict, response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def create_article_and_authenticate_test_user(self):
+        """
+        This method create an article and force authenticates a user
+        """
+        user = self.activated_user()
+        self.client.force_authenticate(user=user)
+        self.create_article(user)
 
 class TestArticleLikeDislikeArticleViews(base_class.BaseTest):
     def setUp(self):
