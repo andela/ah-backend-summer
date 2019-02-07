@@ -24,10 +24,14 @@ class ArticleSerializer (serializers.ModelSerializer):
             "body",
             "author",
             "image",
+            'like_count',
+            'dislike_count'
         )
         read_only_fields = (
             'author',
             'slug',
             'created_at',
             'updated_at'
+            'like_count',
+            'dislike_count'
         )

@@ -2,10 +2,9 @@ from django.urls import reverse
 
 from rest_framework import status
 
-from ...authentication.tests import base_class
+from authors.apps.articles.tests import base_class
 from .test_data import test_article_data
 from ..models import Article
-from ...profiles.models import Profile
 
 
 class TestArticleView(base_class.BaseTest):
@@ -17,10 +16,6 @@ class TestArticleView(base_class.BaseTest):
     3. delete an article if authorized or not authorized
     4. update an article if authorized or not authorized
     """
-
-    def setUp(self):
-        super().setUp()
-        self.articles_url = reverse('articles:articles')
 
     def test_create_article(self):
         """
@@ -101,8 +96,7 @@ class TestArticleView(base_class.BaseTest):
         """
         self.create_article_and_authenticate_test_user()
         article = Article.objects.all().first()
-        response = self.client.put(reverse('articles:article-details',
-                                           kwargs={'slug': article.slug}),
+        response = self.client.put(self.article_url(article.slug),
                                    data=test_article_data.update_article_data,
                                    format='json')
         self.assertIn('title', response.data)
@@ -113,6 +107,7 @@ class TestArticleView(base_class.BaseTest):
         This test method tests wether an unauthorized user tries to update
         an article that doesnot belong to them
         """
+        self.create_article_and_authenticate_test_user()
         self.create_article_and_authenticate_test_user_2()
         article = Article.objects.all().first()
         response = self.client.put(reverse('articles:article-details',
@@ -157,6 +152,7 @@ class TestArticleView(base_class.BaseTest):
         This test method tests wether an unauthorized user tries to delete
         an article that doesnot belong to them
         """
+        self.create_article_and_authenticate_test_user()
         self.create_article_and_authenticate_test_user_2()
         article = Article.objects.all().first()
         response = self.client.delete(reverse('articles:article-details',
@@ -186,22 +182,70 @@ class TestArticleView(base_class.BaseTest):
         self.assertDictEqual(expected_dict, response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def create_article_and_authenticate_test_user(self):
-        """
-        This method create an article and force authenticates a user
-        """
-        user = self.activated_user()
-        self.client.force_authenticate(user=user)
-        Article.objects.create(
-            title='whale',
-            description='fish',
-            body='In water',
-            author=Profile.objects.get(user=user.id))
 
-    def create_article_and_authenticate_test_user_2(self):
-        """
-        This method create an article and force authenticates a different user
-        """
-        self.create_article_and_authenticate_test_user()
-        user2 = self.create_another_user_in_db()
-        self.client.force_authenticate(user=user2)
+class TestArticleLikeDislikeArticleViews(base_class.BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.user, self.article = self.create_article_and_authenticate_test_user()
+
+    def test_user_can_like_an_article(self):
+        """a user should be able to to like an article if authenticated"""
+        self.assertFalse(self.article.is_liked_by(self.user))
+        response = self.client.post(self.like_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(self.article.is_liked_by(self.user))
+
+    def test_user_can_dislike_an_article(self):
+        """a user should be able to to like an article if authenticated"""
+        self.assertFalse(self.article.is_disliked_by(self.user))
+        response = self.client.post(self.dislike_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(self.article.is_liked_by(self.user))
+
+    def test_user_can_get_like_status_for_article_they_do_not_like(self):
+        """a user should get the correct like status for an article they do not like"""
+        response = self.client.get(self.is_liked_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_liked"], False)
+
+    def test_user_can_get_like_status_for_article_they_like(self):
+        """a user should get the correct like status for an article they do like"""
+        self.article.liked_by.add(self.user)
+        response = self.client.get(self.is_liked_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_liked"], True)
+
+    def test_user_can_get_dislike_status_for_article_they_do_not_dislike(self):
+        """a user should get the correct like status for an article they do not dislike"""
+        response = self.client.get(self.is_disliked_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_disliked"], False)
+
+    def test_user_can_get_dislike_status_for_article_they_dislike(self):
+        """a user should get the correct like status for an article they do dislike"""
+        self.article.disliked_by.add(self.user)
+        response = self.client.get(self.is_disliked_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_disliked"], True)
+
+    def test_unauthorized_user_cannot_like_an_article(self):
+        """a request without a valid token does not allow a user to like an article"""
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.like_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_user_cannot_dislike_an_article(self):
+        """a request without a valid token does not allow a user to dislike an article"""
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.dislike_article_url(self.article.slug))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_can_the_number_of_people_that_liked_an_article(self):
+        """a user can get an article's like count"""
+        response = self.client.get(self.article_url(self.article.slug))
+        self.assertEqual(response.data['like_count'], 0)  # we haven't liked any article yet
+
+    def test_user_can_the_number_of_people_that_disliked_an_article(self):
+        """a user can get an article's dislike count"""
+        response = self.client.get(self.article_url(self.article.slug))
+        self.assertEqual(response.data['dislike_count'], 0)  # we haven't disliked any article yet

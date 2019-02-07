@@ -444,6 +444,56 @@ Authentication required, returns the Article
 
 No additional parameters required
 
+### Like Article
+
+`POST /articles/:slug/like`
+
+Authentication required
+
+### Undo A Like
+
+`DELETE /articles/:slug/like`
+
+Authentication required
+
+### Dislike Article
+
+`POST /articles/:slug/dislike`
+
+Authentication required
+
+### Undo A Dislike
+
+`DELETE /articles/:slug/dislike`
+
+### Check if an article is liked
+
+`GET /articles/:slug/is-liked`
+
+Authentication required
+
+Returns the like status
+
+```source-json
+{
+    "is_liked": true
+}
+```
+
+### Check if an article is disliked
+
+`GET /articles/:slug/is-disliked`
+
+Authentication required
+
+Returns the dislike status
+
+```source-json
+{
+    "is_disliked": true
+}
+```
+
 ### Get Tags
 
 `GET /tags`
