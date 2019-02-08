@@ -13,6 +13,7 @@ class ArticleSerializer (serializers.ModelSerializer):
     """
     author = ProfileSerializers.ProfileSerializer(read_only=True)
     favorited = serializers.SerializerMethodField()
+    average_ratings = serializers.IntegerField(required=False)
 
     class Meta:
         model = models.Article
@@ -30,6 +31,7 @@ class ArticleSerializer (serializers.ModelSerializer):
             "favorited_by",
             "favoritesCount",
             "favorited",
+            "average_ratings"
         )
         read_only_fields = (
             'author',
@@ -48,3 +50,27 @@ class ArticleSerializer (serializers.ModelSerializer):
         if self.context["request"].user.profile in obj.favorited_by.all():
             return True
         return False
+        extra_kwargs = {
+            "author": {"read_only": True},
+            "slug": {"read_only": True}
+        }
+
+
+class ArticleRatingSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Rating
+        fields = (
+            "rate_score", "title", "author"
+        )
+        extra_kwargs = {
+            "rate_score": {"max_value": 5, "min_value": 1}
+        }
+
+    def get_title(self, obj):
+        return obj.article.title
+
+    def get_author(self, obj):
+        return obj.article.author.user.username

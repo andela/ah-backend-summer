@@ -23,4 +23,6 @@ urlpatterns = [
          name='article-details'),
     path('<slug>/favorite', views.ToggleFavoriteAPIView.as_view(),
          name='article-favorite'),
+    path('<slug>/rate', views.ArticleRatingAPIView.as_view(),
+         name='article-rates'),
 ]
