@@ -34,9 +34,15 @@ class Article(models.Model):
 
 
 def article_pre_save_receiver(sender, instance, *args, **kwargs):
+    """
+    article_pre_save_reciever generates a unique slug for an article
+    create_slug function cretes are slug based on the article title
+    unique_random_string function generates a random string
+    """
+    slug = utils.create_slug(instance)
+    random_string = utils.unique_random_string()
     if not instance.slug:
-        instance.slug = f'{utils.create_slug(instance)}-\
-            {utils.unique_random_string()}'
+        instance.slug = f'{slug}-{random_string}'
 
 
 pre_save.connect(article_pre_save_receiver, sender=Article)
