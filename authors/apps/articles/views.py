@@ -26,7 +26,8 @@ class ArticlesApiView (generics.ListCreateAPIView):
     renderer_classes = (ArticleJSONRenderer,)
 
     def post(self, request):
-        data = request.data.get('articles')
+        data = request.data.get(
+            'articles') if 'articles' in request.data else request.data
         serializer = self.serializer_class(
             data=data
         )
@@ -64,9 +65,9 @@ class ArticleDetailApiView (generics.GenericAPIView):
         article = self.get_object(slug)
         if article:
             self.check_object_permissions(request, article)
-            serializer_data = self.serializer_class(article,
-                                                    request.data.get(
-                                                        'articles'),
+            data = request.data.get(
+                'articles')if 'articles' in request.data else request.data
+            serializer_data = self.serializer_class(article, data,
                                                     partial=True)
             serializer_data.is_valid(raise_exception=True)
             serializer_data.save()
