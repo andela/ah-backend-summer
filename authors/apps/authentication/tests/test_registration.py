@@ -3,11 +3,12 @@ import json
 from django.core import mail
 from django.urls import reverse
 from rest_framework import status
-from .test_data.register_data import (valid_register_data, register_short_password,
-                                      register_no_email, register_no_password,
-                                      register_no_username, register_invalid_email,
-                                      register_no_username_password_email, register_invalid_password,
-                                      expired_link, invalid_link)
+from .test_data.register_data import (
+    valid_register_data, register_short_password,
+    register_no_email, register_no_password,
+    register_no_username, register_invalid_email,
+    register_no_username_password_email, register_invalid_password,
+    expired_link, invalid_link)
 from .test_data import login_data
 from .base_class import BaseTest
 
@@ -16,6 +17,7 @@ class RegistrationTest(BaseTest):
     """
     unit tests for all modules under user registration
     """
+
     def test_user_register_successful(self):
         """Test user registration passes with correct user data"""
         response = self.client.post(self.url_register,
@@ -35,11 +37,11 @@ class RegistrationTest(BaseTest):
         """
         self.register_test_user()
         self.assertEqual(
-                    "Activation for your Author's Haven account",
-                    mail.outbox[0].subject)
+            "Activation for your Author's Haven account",
+            mail.outbox[0].subject)
         self.assertIn(
-                    "Thank you, Please Activate your account below.",
-                    mail.outbox[0].body)
+            "Thank you, Please Activate your account below.",
+            mail.outbox[0].body)
 
     def test_successful_account_activation(self):
         """
@@ -48,8 +50,8 @@ class RegistrationTest(BaseTest):
         """
         response = self.register_and_activate_test_user()
         self.assertEqual(
-                    response.data['msg'],
-                    "Your account is activated, enjoy")
+            response.data['msg'],
+            "Your account is activated, enjoy")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_cannot_activate_an_already_activated_account(self):
@@ -64,7 +66,7 @@ class RegistrationTest(BaseTest):
 
         reactivate = self.client.get(url, content_type='application/json')
         self.assertEqual(
-                    reactivate.data['msg'], "This account is already activated")
+            reactivate.data['msg'], "This account is already activated")
         self.assertEqual(reactivate.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_activate_a_nonexistant_account(self):
@@ -75,8 +77,8 @@ class RegistrationTest(BaseTest):
         url = reverse('authentication:activate', args=[valid_token])
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(
-                    response.data['err_msg'], 
-                    "User matching query does not exist.")
+            response.data['err_msg'],
+            "User matching query does not exist.")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_register_password_short(self):
@@ -153,6 +155,7 @@ class RegistrationTest(BaseTest):
     """
     Integration tests for all modules under user registration
     """
+
     def test_cannot_activate_with_expired_link(self):
         """
         Test user can not access activateion view with an expired token.
@@ -160,7 +163,7 @@ class RegistrationTest(BaseTest):
         url = expired_link
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(
-                    response.data['err_msg'], "Token expired")
+            response.data['err_msg'], "Token expired")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_activate_with_invalid_link(self):
@@ -170,6 +173,5 @@ class RegistrationTest(BaseTest):
         url = invalid_link
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(
-                    response.data['err_msg'], "Invalid token")
+            response.data['err_msg'], "Invalid token")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        

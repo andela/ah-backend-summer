@@ -157,20 +157,23 @@ class GoogleFacebookAuthSerializer(serializers.Serializer):
     """Handle serialization of Google and Facebook access tokens"""
     access_token = serializers.CharField(max_length=2000)
 
+
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255, required=True)
 
-    def validate(self,data):
+    def validate(self, data):
         email = data.get('email', None)
         if email is None:
             raise serializers.ValidationError("Email field is required")
         return email
+
 
 class PasswordResetSerializer(serializers.Serializer):
     new_password = serializers.CharField(
         max_length=128, allow_blank=False, write_only=True, required=True,
         min_length=6
     )
+
     def validate(self, data):
         new_password = data.get('new_password', None)
         if not re.compile(r'^[0-9a-zA-Z]*$').match(new_password):

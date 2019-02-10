@@ -26,91 +26,102 @@ class TestUserJwtAuthentication (BaseTest):
         url = activation_link.split("testserver").pop(1)
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(
-                    response.data['msg'],
-                    "Your account is activated, enjoy")
+            response.data['msg'],
+            "Your account is activated, enjoy")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.post(
-                                reverse('authentication:login'),
-                                data=json.dumps(login_data.valid_login_data),
-                                content_type='application/json')
+            reverse('authentication:login'),
+            data=json.dumps(login_data.valid_login_data),
+            content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('token', response.data)
 
     def test_user_registration(self):
         response = self.client.post(self.url_register, data=json.dumps(
-            register_data.valid_register_data), 
+            register_data.valid_register_data),
             content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('email', response.data)
 
     def test_missing_token_and_bearer_prefix(self):
-        response = self.client.post(self.url_user_detail,
+        response = self.client.post(
+            self.url_user_detail,
             HTTP_AUTHORIZATION="")
         expected_dict = {
             "detail": "Authentication credentials were not provided."
-            }
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)
 
     def test_provide_long_bearer_token(self):
-        response = self.client.post(self.url_user_detail,
+        response = self.client.post(
+            self.url_user_detail,
             HTTP_AUTHORIZATION="Bearer jlasdngklasdgnklas token")
         expected_dict = {
             "detail": "sorry you have provided a long token"
-            }
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)
 
     def test_provide_wrong_bearer_prefix(self):
-        response = self.client.post(self.url_user_detail,
+        response = self.client.post(
+            self.url_user_detail,
             HTTP_AUTHORIZATION="Bearerrr jlasdngklasdgnklassdgsdgf")
         expected_dict = {
             "detail": "wrong prefix, please use Bearer"
-            }
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)
 
     def test_missing_bearer_prefix(self):
-        response = self.client.get(self.url_user_detail,
+        response = self.client.get(
+            self.url_user_detail,
             HTTP_AUTHORIZATION='j,asndg/lkbdsagdshmngj,asndg/lkbdsagdshmng')
         expected_dict = {
             "detail": "You should provide both the Bearer prefix and the token"
-            }
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)
 
     def test_missing_token(self):
-        response = self.client.get(self.url_user_detail, 
+        response = self.client.get(
+            self.url_user_detail,
             HTTP_AUTHORIZATION='Bearer ')
         expected_dict = {
             "detail": "You should provide both the Bearer prefix and the token"
-            }
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)
-    
+
     def test_expired_token(self):
-        response = self.client.get(self.url_user_detail, 
-            HTTP_AUTHORIZATION='Bearer '+ login_data.expired_token)
+        response = self.client.get(
+            self.url_user_detail,
+            HTTP_AUTHORIZATION='Bearer ' + login_data.expired_token)
         expected_dict = {
             "detail": "Token has expired."
-            }
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)
 
     def test_valid_token_with_non_existing_user(self):
-        response = self.client.get(self.url_user_detail, 
-            HTTP_AUTHORIZATION='Bearer '+ login_data.valid_token_unexisting_user)
+        response = self.client.get(
+            self.url_user_detail,
+            HTTP_AUTHORIZATION='Bearer ' +
+            login_data.valid_token_unexisting_user)
         expected_dict = {
             "detail": "A user matching this token was not found."
-            }
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)
 
     def test_providing_invalid_token(self):
-        response = self.client.post(self.url_user_detail,
-            HTTP_AUTHORIZATION='Bearer j,asndg/lkbdsagdshmngj,asndg/lkbdsagdshmng')
+        response = self.client.post(
+            self.url_user_detail,
+            HTTP_AUTHORIZATION='Bearer j,asndg/lkbdsagdshmngj,\
+asndg/lkbdsagdshmng')
         expected_dict = {
-            "detail": "Error decoding signature. Please check the token you have provided."
-            }
+            "detail": "Error decoding signature. \
+Please check the token you have provided."
+        }
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(response.data, expected_dict)

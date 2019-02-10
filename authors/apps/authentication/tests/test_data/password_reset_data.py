@@ -7,7 +7,7 @@ from .login_data import valid_login_data
 registered_email = {
     "user": {
         "email": valid_login_data["user"]["email"]
-    }  
+    }
 }
 
 unregistered_email = {
@@ -19,33 +19,34 @@ unregistered_email = {
 new_valid_password = {
     "user": {
         "new_password": "xml123XML"
-    }    
+    }
 }
 
 new_short_password = {
     "user": {
         "new_password": "ab2"
-    }    
+    }
 }
 
 new_invalid_password = {
     "user": {
         "new_password": "abcd@efgh"
-    }    
+    }
 }
 
 new_blank_password = {
     "user": {
-        "new_passord":""
-    } 
+        "new_passord": ""
+    }
 }
 
 token = jwt.encode({
-            "email":valid_login_data["user"]["email"],
-        },
-            settings.SECRET_KEY,
-            algorithm='HS256'
-        )
-reset_link = '/api/v1/user/reset-password/'+ token.decode('utf-8') + '/'
+    "email": valid_login_data["user"]["email"],
+},
+    settings.SECRET_KEY,
+    algorithm='HS256'
+)
+reset_link = '/api/v1/user/reset-password/' + token.decode('utf-8')
 
-invalid_reset_link = '/api/v1/user/reset-password/'+ token.decode('utf-8') + 'wrongL!NK/'
+invalid_reset_link = '/api/v1/user/reset-password/' + \
+    token.decode('utf-8') + 'wrongL!NK'

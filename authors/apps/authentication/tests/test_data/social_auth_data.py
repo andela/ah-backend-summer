@@ -2,15 +2,15 @@ invalid_twitter_secret = {
     'access_token': 'kjajsjaiiw02q2mamaa'
 }
 
-invalid_twitter_token= {
+invalid_twitter_token = {
     'access_token': 'iaiiwiqi9932'
 }
 
-invalid_twitter_token_missing_secret_and_token= {}
+invalid_twitter_token_missing_secret_and_token = {}
 
 valid_twitter_token = {
-	'access_token': '1090696762837397504-5mYPWq5asfDk6i3bcWjpXp3BMQTkXp',
-	'access_token_secret': '75FlY7ichYD6Zzsa33IhGnacfhdkgDUWxweEjsotvY2PQJyZ'
+    'access_token': '1090696762837397504-5mYPWq5asfDk6i3bcWjpXp3BMQTkXp',
+    'access_token_secret': '75FlY7ichYD6Zzsa33IhGnacfhdkgDUWxweEjsotvY2PQJyZ'
 }
 
 valid_google_token = {

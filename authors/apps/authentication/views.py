@@ -25,7 +25,7 @@ import twitter
 import facebook
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from .social_login import(login_or_register_social_user)
+from .social_login import (login_or_register_social_user)
 from .models import User
 
 
@@ -180,7 +180,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
 class TwitterAuthAPIView(GenericAPIView):
     """
-    Handle login of a Twitter user via the Twitter Api. 
+    Handle login of a Twitter user via the Twitter Api.
     The Twitter Api takes parameters of consummer key, consumer secret,
     access token and access token secret. It then verifies the credentials
     and returns the twitter user information
@@ -198,9 +198,10 @@ class TwitterAuthAPIView(GenericAPIView):
         access_token = request.data.get('access_token', {})
         access_token_secret = request.data.get('access_token_secret', {})
 
-        serializer = self.serializer_class(data={'access_token': access_token,
-                                    'access_token_secret': access_token_secret
-                                                 })
+        serializer = self.serializer_class(
+            data={'access_token': access_token,
+                  'access_token_secret': access_token_secret
+                  })
         serializer.is_valid(raise_exception=True)
 
         # verify and return twitter user information
@@ -220,10 +221,10 @@ class TwitterAuthAPIView(GenericAPIView):
 
 class GoogleAuthAPIView(GenericAPIView):
     """
-    Handle login of a Google user via the Google oauth2. 
-    id_token is an open id that allows Clients to verify the identity of the 
-    End-User based on the authentication performed by an Authorization Server, 
-    as well as to obtain basic profile information about the End-User in an 
+    Handle login of a Google user via the Google oauth2.
+    id_token is an open id that allows Clients to verify the identity of the
+    End-User based on the authentication performed by an Authorization Server,
+    as well as to obtain basic profile information about the End-User in an
     interoperable and REST-like manner.
 
     login_or_register_social_user method, takes in google user object and
@@ -250,7 +251,7 @@ class GoogleAuthAPIView(GenericAPIView):
 
 class FacebookAuthAPIView(GenericAPIView):
     """
-    Handle login of a Facebook user via the Facebook Graph API. 
+    Handle login of a Facebook user via the Facebook Graph API.
     The Graph API returns a graph object that contains user information
 
     login_or_register_social_user method, takes in Facebook user object and
@@ -313,13 +314,13 @@ class PasswordResetAPIView(GenericAPIView):
     def get(self, request, token):
         user = PasswordResetManager(request).get_user_from_encoded_token(token)
         if user is None:
-            return Response({"message": "Invalid token!"},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid token!"},
+                status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {
-                "message": (
-                    "Token is valid. OK to send new password information"
-                )
+                "message": "Token is valid. \
+OK to send new password information"
             },
             status=status.HTTP_200_OK
         )
@@ -340,5 +341,6 @@ class PasswordResetAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         new_password = data.get("new_password")
         PasswordResetManager(request).update_password(email, new_password)
-        return Response({"message": "Your password has been reset"},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Your password has been reset"},
+            status=status.HTTP_200_OK)

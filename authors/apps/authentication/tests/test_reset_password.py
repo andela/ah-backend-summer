@@ -7,12 +7,13 @@ mailbox.
 from .base_class import BaseTest
 import json
 from rest_framework import status
-from .test_data.password_reset_data import (reset_link, invalid_reset_link,
+from .test_data.password_reset_data import (
+    reset_link, invalid_reset_link,
     registered_email, unregistered_email, new_valid_password,
     new_blank_password, new_invalid_password, new_short_password
 )
 from django.urls import reverse
-                                   
+
 
 class ResetPassword(BaseTest):
 
@@ -22,7 +23,7 @@ class ResetPassword(BaseTest):
         self.password_reset_request_url = reverse(
             'authentication:request-password-reset'
         )
-       
+
     def test_request_password_reset_registered_user(self):
         """test user with valid account requests password reset"""
         response = self.client.post(
@@ -34,8 +35,8 @@ class ResetPassword(BaseTest):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_request_password_reset_unregistered_user(self): 
-        """test user with no account requests for a password reset""" 
+    def test_request_password_reset_unregistered_user(self):
+        """test user with no account requests for a password reset"""
         response = self.client.post(
             self.password_reset_request_url,
             data=json.dumps(
@@ -47,7 +48,7 @@ class ResetPassword(BaseTest):
 
     def test_request_password_reset_valid_link(self):
         """
-        test user uses valid reset link sent to their email 
+        test user uses valid reset link sent to their email
         to access password reset endpoint
         """
         response = self.client.get(
@@ -57,7 +58,8 @@ class ResetPassword(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_request_password_reset_invalid_link(self):
-        """test user uses invalid reset link to access password reset endpoint"""
+        """test user uses invalid reset link to access password reset endpoint
+        """
         response = self.client.get(
             invalid_reset_link,
             content_type='application/json'
