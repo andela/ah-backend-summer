@@ -14,20 +14,17 @@ class ArticleManager(models.Manager):
     ArticleManager class is a custom Article model manager
     """
 
-    def toggle_favorite(self, user, article):
+    def toggle_favorite(self, user, article, is_favoriting):
         """
         toggle_favorite method adds user to favorited_by if they favorite an
         article or removes user from favorited_by if the unfavorite an article
         """
-        if user in article.favorited_by.all():
-            article.favorited_by.remove(user)
-            message = "You have unfavorited this article"
-        else:
+        if user not in article.favorited_by.all() and is_favoriting:
             article.favorited_by.add(user)
-            message = "You have favorited this article"
+        if user in article.favorited_by.all() and not is_favoriting:
+            article.favorited_by.remove(user)
         article.favoritesCount = article.favorited_by.all().count()
         article.save()
-        return message
 
 
 class Article(models.Model):

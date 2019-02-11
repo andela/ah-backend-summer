@@ -9,7 +9,7 @@ from . import (
     permissions as custom_permissions
 )
 from .renderers import ArticleJSONRenderer
-from .utils import model_helpers
+from .utils.model_helpers import *
 from ..profiles import models as profile_model
 
 from .models import Rating, Article
@@ -49,7 +49,7 @@ class ArticleDetailApiView (generics.GenericAPIView):
     renderer_classes = (ArticleJSONRenderer,)
 
     def get_object(self, slug):
-        article = model_helpers.get_single_article_using_slug(slug)
+        article = get_single_article_using_slug(slug)
         return article
 
     def get(self, request, slug):
@@ -110,7 +110,7 @@ class LikeDislikeArticleAPIView(generics.GenericAPIView):
         :param slug: The expected article slug
         :return: success for the action, or the appropriate error on failure
         """
-        article = model_helpers.get_single_article_using_slug(slug)
+        article = get_single_article_using_slug(slug)
 
         if article and action is 'like':
             article.disliked_by.remove(request.user)
@@ -134,7 +134,7 @@ class LikeDislikeArticleAPIView(generics.GenericAPIView):
         """
         Remove a user from the list of people that liked an article
         """
-        article = model_helpers.get_single_article_using_slug(slug)
+        article = get_single_article_using_slug(slug)
 
         if article and action is 'like':
             article.liked_by.remove(request.user)
@@ -160,7 +160,7 @@ class ArticlesIsLikedDislikedAPIView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, slug='', action='like'):
-        article = model_helpers.get_single_article_using_slug(slug)
+        article = get_single_article_using_slug(slug)
 
         if article and action is 'like':
             return Response({
@@ -177,25 +177,34 @@ class ArticlesIsLikedDislikedAPIView(generics.GenericAPIView):
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-class ToggleFavoriteAPIView(generics.GenericAPIView):
+class FavoriteAPIView(generics.GenericAPIView):
     """
-    ToggleFavoriteAPIView favorites and unfavorites an article
+    FavoriteAPIView favorites an article
     """
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.ArticleSerializer
 
-    def get(self, request, slug):
-        article = model_helpers.get_single_article_using_slug(slug)
-        user = request.user.profile
-        if article:
-            message = models.Article.objects.toggle_favorite(user, article)
-            serializer = self.serializer_class(article,
-                                               context={"request": request})
-            data = {"message": message, "article": serializer.data}
-            return Response(data, status=status.HTTP_200_OK)
-        error_message = 'Sorry article with this slug doesnot exist'
-        return Response({'errors': error_message},
-                        status=status.HTTP_404_NOT_FOUND)
+    def post(self, request, slug):
+        data, status_code = favorite_unfavorite_article(request,
+                                                        slug,
+                                                        self.serializer_class,
+                                                        True)
+        return Response(data, status=status_code)
+
+
+class UnFavoriteAPIView(generics.GenericAPIView):
+    """
+    UnFavoriteAPIView unfavorites an article
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.ArticleSerializer
+
+    def delete(self, request, slug):
+        data, status_code = favorite_unfavorite_article(request,
+                                                        slug,
+                                                        self.serializer_class,
+                                                        False)
+        return Response(data, status=status_code)
 
 
 class ArticleRatingAPIView(generics.GenericAPIView):
@@ -215,7 +224,7 @@ class ArticleRatingAPIView(generics.GenericAPIView):
         :return: article's rate score, title, author of that rated article
         """
 
-        article = model_helpers.get_single_article_using_slug(slug)
+        article = get_single_article_using_slug(slug)
         user = request.user
 
         rate = request.data.get('rate_score', {})
