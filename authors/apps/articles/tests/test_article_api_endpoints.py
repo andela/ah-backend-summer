@@ -96,7 +96,7 @@ class TestArticleView(base_class.BaseTest):
         """
         self.create_article_and_authenticate_test_user()
         article = Article.objects.all().first()
-        response = self.client.put(self.article_url(article.slug),
+        response = self.client.patch(self.article_url(article.slug),
                                    data=test_article_data.update_article_data,
                                    format='json')
         self.assertIn('title', response.data)
@@ -110,7 +110,7 @@ class TestArticleView(base_class.BaseTest):
         self.create_article_and_authenticate_test_user()
         self.create_article_and_authenticate_test_user_2()
         article = Article.objects.all().first()
-        response = self.client.put(reverse('articles:article-details',
+        response = self.client.patch(reverse('articles:article-details',
                                            kwargs={'slug': article.slug}),
                                    data=test_article_data.update_article_data,
                                    format='json')
@@ -126,7 +126,7 @@ class TestArticleView(base_class.BaseTest):
         """
         self.create_article_and_authenticate_test_user()
         article = Article.objects.all().first()
-        response = self.client.put(reverse('articles:article-details',
+        response = self.client.patch(reverse('articles:article-details',
                                            kwargs={'slug':
                                                    test_article_data.
                                                    un_existing_slug}),
