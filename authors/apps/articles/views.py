@@ -23,10 +23,11 @@ class ArticlesApiView (generics.ListCreateAPIView):
     renderer_classes = (ArticleJSONRenderer,)
 
     def post(self, request):
-        data = request.data.get(
-            'articles') if 'articles' in request.data else request.data
+        data = request.data
+        article = data.get('articles') if "articles" in data else data
         serializer = self.serializer_class(
-            data=data
+            data=article,
+            context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(
@@ -51,21 +52,26 @@ class ArticleDetailApiView (generics.GenericAPIView):
 
     def get(self, request, slug):
         article = self.get_object(slug)
+        context = {"request": request}
         if article:
-            serialized_data = self.serializer_class(article)
+            serialized_data = self.serializer_class(article,
+                                                    context=context)
             return Response(serialized_data.data, status=status.HTTP_200_OK)
         return Response({
             'errors': 'sorry article with that slug doesnot exist'
         }, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, slug):
+        data = request.data
+        article_data = data.get('articles') if "articles" in data else data
         article = self.get_object(slug)
+        context = {"request": request}
         if article:
             self.check_object_permissions(request, article)
-            data = request.data.get(
-                'articles')if 'articles' in request.data else request.data
-            serializer_data = self.serializer_class(article, data,
-                                                    partial=True)
+            serializer_data = self.serializer_class(article,
+                                                    article_data,
+                                                    partial=True,
+                                                    context=context)
             serializer_data.is_valid(raise_exception=True)
             serializer_data.save()
             return Response(serializer_data.data,
@@ -167,3 +173,24 @@ class ArticlesIsLikedDislikedAPIView(generics.GenericAPIView):
         return Response({
             'errors': 'article with that slug does not exist'
         }, status=status.HTTP_404_NOT_FOUND)
+
+
+class ToggleFavoriteAPIView(generics.GenericAPIView):
+    """
+    ToggleFavoriteAPIView favorites and unfavorites an article
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.ArticleSerializer
+
+    def get(self, request, slug):
+        article = model_helpers.get_single_article_using_slug(slug)
+        user = request.user.profile
+        if article:
+            message = models.Article.objects.toggle_favorite(user, article)
+            serializer = self.serializer_class(article,
+                                               context={"request": request})
+            data = {"message": message, "article": serializer.data}
+            return Response(data, status=status.HTTP_200_OK)
+        error_message = 'Sorry article with this slug doesnot exist'
+        return Response({'errors': error_message},
+                        status=status.HTTP_404_NOT_FOUND)

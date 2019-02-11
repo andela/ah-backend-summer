@@ -12,6 +12,7 @@ class ArticleSerializer (serializers.ModelSerializer):
     as these fields data is auto generated
     """
     author = ProfileSerializers.ProfileSerializer(read_only=True)
+    favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Article
@@ -25,7 +26,10 @@ class ArticleSerializer (serializers.ModelSerializer):
             "author",
             "image",
             'like_count',
-            'dislike_count'
+            'dislike_count',
+            "favorited_by",
+            "favoritesCount",
+            "favorited",
         )
         read_only_fields = (
             'author',
@@ -35,3 +39,12 @@ class ArticleSerializer (serializers.ModelSerializer):
             'like_count',
             'dislike_count'
         )
+
+    def get_favorited(self, obj):
+        """
+        This method returns True is the logged in user favorited the article
+        otherwise it returns False.
+        """
+        if self.context["request"].user.profile in obj.favorited_by.all():
+            return True
+        return False

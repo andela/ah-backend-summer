@@ -10,6 +10,8 @@ from .test_data.register_data import valid_register_data
 from rest_framework.test import APITestCase, APIClient
 
 from django.urls import reverse
+from authors.apps.articles.models import Article
+from authors.apps.profiles.models import Profile
 
 
 class BaseTest(APITestCase):
@@ -64,3 +66,10 @@ class BaseTest(APITestCase):
             username='roger',
             email='roger@mail.com',
             password='ia83naJS')
+
+    def create_article(self, user):
+        return Article.objects.create(
+            title='whale',
+            description='fish',
+            body='In water',
+            author=Profile.objects.get(user=user.id))
