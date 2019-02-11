@@ -5,6 +5,9 @@ from django.db.models.signals import pre_save
 from ..profiles import models as ProfileModel
 from .utils import utils
 
+from ..authentication.models import User
+from .utils.utils import get_average_rate
+
 
 class ArticleManager(models.Manager):
     """
@@ -85,10 +88,21 @@ class Article(models.Model):
 
     @property
     def dislike_count(self):
-        return self.liked_by.count()
+        return self.disliked_by.count()
 
     def __str__(self):
         return self.title
+
+    @property
+    def average_ratings(self):
+        """
+        Calculates average of a reviewed article
+        Returns: average rate score
+        """
+        return get_average_rate(
+            model=Rating,
+            article=self.pk
+        )
 
 
 def article_pre_save_receiver(sender, instance, *args, **kwargs):
@@ -104,3 +118,15 @@ def article_pre_save_receiver(sender, instance, *args, **kwargs):
 
 
 pre_save.connect(article_pre_save_receiver, sender=Article)
+
+
+class Rating(models.Model):
+    """
+    Authenticated users can rate an article on a scale of 1 to 5
+    Users can get average rating for every article
+    """
+    rate_score = models.IntegerField(null=True, blank=True)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE,
+                                related_name='article_ratings',
+                                blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -13,6 +13,12 @@ from django.urls import reverse
 from authors.apps.articles.models import Article
 from authors.apps.profiles.models import Profile
 
+from ...articles.models import Article
+from ...profiles.models import Profile
+
+from ...articles.models import Article
+from ...profiles.models import Profile
+
 
 class BaseTest(APITestCase):
     def setUp(self):
@@ -56,6 +62,9 @@ class BaseTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
     def activated_user(self):
+        """
+        Method returns activated user who was verified
+        """
         return User.objects.create_user(
             username='abc123',
             email='abc@abc.com',

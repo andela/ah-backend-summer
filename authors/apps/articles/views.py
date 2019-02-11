@@ -12,6 +12,8 @@ from .renderers import ArticleJSONRenderer
 from .utils import model_helpers
 from ..profiles import models as profile_model
 
+from .models import Rating, Article
+
 
 class ArticlesApiView (generics.ListCreateAPIView):
     """The ArticleDetailApiView handles the retreiving of a all article,
@@ -194,3 +196,53 @@ class ToggleFavoriteAPIView(generics.GenericAPIView):
         error_message = 'Sorry article with this slug doesnot exist'
         return Response({'errors': error_message},
                         status=status.HTTP_404_NOT_FOUND)
+
+
+class ArticleRatingAPIView(generics.GenericAPIView):
+    """
+    Allows user to rate an article.
+    Restricts author from rating their own article
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.ArticleRatingSerializer
+    renderer_classes = (ArticleJSONRenderer,)
+
+    def post(self, request, slug):
+        """
+        Allow user to rate an article
+        :param request: The incoming request object
+        :param slug: The expected article slug
+        :return: article's rate score, title, author of that rated article
+        """
+
+        article = model_helpers.get_single_article_using_slug(slug)
+        user = request.user
+
+        rate = request.data.get('rate_score', {})
+        if rate > 5 or rate < 1:
+            return Response({
+                'errors': 'Rate score should be a value > 1 and < 5',
+                'status': status.HTTP_400_BAD_REQUEST},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if article.author.pk == user.pk:
+            return Response({
+                'errors': 'Author can not rate their own article',
+                'status': status.HTTP_403_FORBIDDEN},
+                status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            Rating.objects.get(user=user.pk, article_id=article.pk)
+            return Response(
+                {'message': 'You already rated this article',
+                 'status': status.HTTP_422_UNPROCESSABLE_ENTITY},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        except Rating.DoesNotExist:
+            serializer.save(user=user, article=article)
+            rate_data = serializer.data
+            return Response({'articles': rate_data,
+                             'status': status.HTTP_201_CREATED},
+                            status=status.HTTP_201_CREATED)
