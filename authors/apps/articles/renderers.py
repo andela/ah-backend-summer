@@ -9,5 +9,5 @@ class ArticleJSONRenderer(renderers.JSONRenderer):
     charset = "utf-8"
 
     def render(self, data, media_type=None, renderer_context=None):
-        # Method is responsible for displaying user profile
+        # Method is responsible for displaying articles
         return json.dumps({"articles": data})
