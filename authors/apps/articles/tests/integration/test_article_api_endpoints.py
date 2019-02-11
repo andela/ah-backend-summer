@@ -1,6 +1,9 @@
+from django.urls import reverse
+
 from rest_framework import status
 
 from authors.apps.articles.tests import base_class
+from ..test_data import test_article_data
 
 
 class TestArticleAPIEndpoints(base_class.BaseTest):
@@ -20,10 +23,12 @@ class TestArticleAPIEndpoints(base_class.BaseTest):
 
     def test_user_can_undo_a_dislike(self):
         self.assertEqual(self.article.is_liked_by(self.user), False)
-        response = self.client.post(self.dislike_article_url(self.article.slug))
+        response = self.client.post(
+            self.dislike_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.article.is_disliked_by(self.user), True)
-        response = self.client.delete(self.dislike_article_url(self.article.slug))
+        response = self.client.delete(
+            self.dislike_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.article.is_disliked_by(self.user), False)
 
@@ -31,7 +36,8 @@ class TestArticleAPIEndpoints(base_class.BaseTest):
         self.article.liked_by.add(self.user)
         self.assertEqual(self.article.is_liked_by(self.user), True)
         self.assertEqual(self.article.is_disliked_by(self.user), False)
-        response = self.client.post(self.dislike_article_url(self.article.slug))
+        response = self.client.post(
+            self.dislike_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.article.is_liked_by(self.user), False)
         self.assertEqual(self.article.is_disliked_by(self.user), True)
@@ -66,3 +72,23 @@ class TestArticleAPIEndpoints(base_class.BaseTest):
         self.client.post(self.like_article_url(self.article.slug))
         response = self.client.get(self.article_url(self.article.slug))
         self.assertEqual(response.data['like_count'], 2)
+
+    def test_if_tags_are_in_response_object(self):
+        user2 = self.create_article_and_authenticate_test_user_2()
+        self.client.force_authenticate(user2)
+        response = self.client.post(self.articles_url,
+                                    data=test_article_data.
+                                    valid_article_data,
+                                    format='json')
+        self.assertIn('tag_list', response.data)
+
+    def test_get_all_tags(self):
+        user2 = self.create_article_and_authenticate_test_user_2()
+        self.client.force_authenticate(user2)
+        self.client.post(self.articles_url,
+                         data=test_article_data.
+                         valid_article_data_with_tags,
+                         format='json')
+        response = self.client.get(reverse('articles:tags'))
+        # print(response.data)
+        self.assertEqual(2, len(response.data['tags']))

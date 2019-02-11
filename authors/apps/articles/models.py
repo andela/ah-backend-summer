@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
+from django.contrib.postgres.fields import ArrayField
 
 from ..profiles import models as ProfileModel
 from .utils import utils
@@ -45,6 +46,11 @@ class Article(models.Model):
     author = models.ForeignKey(ProfileModel.Profile,
                                on_delete=models.CASCADE)
     body = models.TextField()
+    # article tags
+    tag_list = ArrayField(
+        models.CharField(max_length=200),
+        blank=True,
+        default=list)
     # users that liked this article
     liked_by = models.ManyToManyField(to=settings.AUTH_USER_MODEL,
                                       related_name='liked_articles',

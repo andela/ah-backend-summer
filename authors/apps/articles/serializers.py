@@ -31,7 +31,8 @@ class ArticleSerializer (serializers.ModelSerializer):
             "favorited_by",
             "favoritesCount",
             "favorited",
-            "average_ratings"
+            "average_ratings",
+            "tag_list"
         )
         read_only_fields = (
             'author',
