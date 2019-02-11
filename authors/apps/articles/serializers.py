@@ -47,6 +47,8 @@ class ArticleSerializer (serializers.ModelSerializer):
         This method returns True is the logged in user favorited the article
         otherwise it returns False.
         """
+        if self.context["request"].user.is_anonymous:
+            return False
         if self.context["request"].user.profile in obj.favorited_by.all():
             return True
         return False

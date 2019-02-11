@@ -63,7 +63,7 @@ class ArticleDetailApiView (generics.GenericAPIView):
             'errors': 'sorry article with that slug doesnot exist'
         }, status=status.HTTP_404_NOT_FOUND)
 
-    def put(self, request, slug):
+    def patch(self, request, slug):
         data = request.data
         article_data = data.get('articles') if "articles" in data else data
         article = self.get_object(slug)
@@ -116,14 +116,14 @@ class LikeDislikeArticleAPIView(generics.GenericAPIView):
             article.disliked_by.remove(request.user)
             article.liked_by.add(request.user)
             return Response({
-                'message': 'liked'
+                'message': 'You liked this article!'
             })
 
         if article and action is 'dislike':
             article.liked_by.remove(request.user)
             article.disliked_by.add(request.user)
             return Response({
-                'message': 'disliked'
+                'message': 'You disliked this article!'
             })
 
         return Response({
@@ -139,13 +139,13 @@ class LikeDislikeArticleAPIView(generics.GenericAPIView):
         if article and action is 'like':
             article.liked_by.remove(request.user)
             return Response({
-                'message': 'like undone'
+                'message': 'You no longer like this article'
             })
 
         if article and action is 'dislike':
             article.disliked_by.remove(request.user)
             return Response({
-                'message': 'dislike undone'
+                'message': 'You no longer dislike this article'
             })
 
         return Response({
@@ -221,14 +221,12 @@ class ArticleRatingAPIView(generics.GenericAPIView):
         rate = request.data.get('rate_score', {})
         if rate > 5 or rate < 1:
             return Response({
-                'errors': 'Rate score should be a value > 1 and < 5',
-                'status': status.HTTP_400_BAD_REQUEST},
+                'errors': 'Rate score should be between 1 and 5'},
                 status=status.HTTP_400_BAD_REQUEST)
 
         if article.author.pk == user.pk:
             return Response({
-                'errors': 'Author can not rate their own article',
-                'status': status.HTTP_403_FORBIDDEN},
+                'errors': 'Author can not rate their own article'},
                 status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.serializer_class(data=request.data)
@@ -237,12 +235,12 @@ class ArticleRatingAPIView(generics.GenericAPIView):
         try:
             Rating.objects.get(user=user.pk, article_id=article.pk)
             return Response(
-                {'message': 'You already rated this article',
-                 'status': status.HTTP_422_UNPROCESSABLE_ENTITY},
+                {'message': 'You already rated this article'},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         except Rating.DoesNotExist:
             serializer.save(user=user, article=article)
             rate_data = serializer.data
+            message = 'You have rated this article successfully'
             return Response({'articles': rate_data,
-                             'status': status.HTTP_201_CREATED},
+                             'message': message},
                             status=status.HTTP_201_CREATED)
