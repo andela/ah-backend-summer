@@ -46,8 +46,8 @@ class PasswordResetManager:
         )
         self.context = {
             'username': user.username,
-            'reset_link': self.password_reset_url + self.encoded_token.decode(
-                'utf-8') + '/'
+            'reset_link': self.password_reset_url +
+            self.encoded_token.decode('utf-8') + '/'
         }
         self.email_body = render_to_string(
             'password_reset_email.txt', self.context)

@@ -341,6 +341,6 @@ OK to send new password information"
         serializer.is_valid(raise_exception=True)
         new_password = data.get("new_password")
         PasswordResetManager(request).update_password(email, new_password)
-        return Response(
-            {"message": "Your password has been reset"},
-            status=status.HTTP_200_OK)
+        return Response({
+            "message": "Your password has been reset"
+        }, status=status.HTTP_200_OK)

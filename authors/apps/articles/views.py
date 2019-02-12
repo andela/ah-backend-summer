@@ -13,6 +13,7 @@ from .utils.model_helpers import *
 from ..profiles import models as profile_model
 
 from .models import Rating, Article
+from .paginators import ArticleLimitOffsetPagination
 
 
 class ArticlesApiView (generics.ListCreateAPIView):
@@ -23,6 +24,7 @@ class ArticlesApiView (generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     serializer_class = serializers.ArticleSerializer
     renderer_classes = (ArticleJSONRenderer,)
+    pagination_class = ArticleLimitOffsetPagination
 
     def post(self, request):
         data = request.data
