@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'mailer',
     'django_filters',
     'django_celery_results',
+    'simple_history',
 
     'authors.apps.authentication',
     'authors.apps.core',

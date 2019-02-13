@@ -12,12 +12,7 @@ from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
 from authors.apps.articles.models import Article
 from authors.apps.profiles.models import Profile
-
-from ...articles.models import Article
-from ...profiles.models import Profile
-
-from ...articles.models import Article
-from ...profiles.models import Profile
+from authors.apps.comments.models import Comment
 
 
 class BaseTest(APITestCase):
@@ -82,3 +77,12 @@ class BaseTest(APITestCase):
             description='fish',
             body='In water',
             author=Profile.objects.get(user=user.id))
+
+    def create_comment(self):
+        user = self.activated_user()
+        article = self.create_article(user)
+        return Comment.objects.create(
+            body='i hate whales',
+            author=Profile.objects.get(user=user.id),
+            article=article
+        )

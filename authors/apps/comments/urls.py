@@ -1,8 +1,12 @@
 from django.urls import path
 
 from .views import (
-    CommentApiView, CommentDetailApiView, CommentReplyApiView,
-    CommentReplyDetailApiView
+    CommentApiView,
+    CommentDetailApiView,
+    CommentReplyApiView,
+    CommentReplyDetailApiView,
+    CommentEditHistoryAPIView,
+    CommentReplyEditHistoryAPIView
 )
 
 
@@ -18,4 +22,15 @@ urlpatterns = [
         'comment-reply-details/<int:pk>',
         CommentReplyDetailApiView.as_view(),
         name='comment-reply-details'
-    ), ]
+    ),
+    path(
+        '<str:slug>/comment/<int:pk>/history',
+        CommentEditHistoryAPIView.as_view(),
+        name='comment-edit-history'
+    ),
+    path(
+        '<int:comment_pk>/comment-reply/<int:pk>/history',
+        CommentReplyEditHistoryAPIView.as_view(),
+        name='comment-reply-edit-history'
+    ),
+]

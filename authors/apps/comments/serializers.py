@@ -5,7 +5,8 @@ from ..profiles import serializers as ProfileSerializers
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    """This serializer class specifies fields to render to the user 
+    """
+    This serializer class specifies fields to render to the user
     for reteriving, updating or creating of a comment on an article.
     It specifies the author, article, created_at and updated_at fields
     as read-only since these fields data is auto generated
@@ -32,7 +33,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CommentReplySerializer(serializers.ModelSerializer):
-    """This serializer class specifies fields to render to the user for
+    """
+    This serializer class specifies fields to render to the user for
     reteriving,updating or creating of a reply to a comment. It specifies
     the author, comment,created_at and updated_at fields as read-only
     since these fields data is auto generated

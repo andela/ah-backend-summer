@@ -9,13 +9,14 @@ from rest_framework.renderers import JSONRenderer
 from .serializers import CommentSerializer, CommentReplySerializer
 from .models import Comment, CommentReply
 from ..profiles.models import Profile
+from .permissions import IsOwnerOfCommentOrReply
 from ..articles.models import Article
-from ..articles.utils import model_helpers
+from ..articles.utils import model_helpers as article_helpers
+from .utils import model_helpers
 
 
 class CommentApiView (GenericAPIView):
-    """
-    The ApiView class handles the addition of a comment to an article
+    """The ApiView class handles the addition of a comment to an article
     and retrieving of all comments to an article.
     """
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -39,32 +40,24 @@ class CommentApiView (GenericAPIView):
             "comments": serialized_data.data,
             "commentCount": comments.count(),
             "status_message": (
-            "Successfully returned comments on article: {}".format(slug)
-            )},
-            status=status.HTTP_200_OK
-        )
+                "Successfully returned comments on article: {}".format(slug)
+            )}, status=status.HTTP_200_OK)
 
     def post(self, request, slug):
         self.get_required_objects(request, slug)
         self.get_author_profile(request)
-        serializer = self.serializer_class(
-            data=self.data
-        )
+        serializer = self.serializer_class(data=self.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(
-            author=self.author,
-            article=self.article
-        )
+        serializer.save(author=self.author, article=self.article)
         return Response({"comment": serializer.data,
                          "message": (
-                    "Successfully posted comment on article: {}".format(slug)
-                         )},
-                        status=status.HTTP_201_CREATED)
+                             "Successfully posted comment on article: {}".
+                             format(slug)
+                         )}, status=status.HTTP_201_CREATED)
 
 
 class CommentDetailApiView (GenericAPIView):
-    """
-    The CommentDetailApiView handles the retreiving, modification and 
+    """The CommentDetailApiView handles the retreiving, modification and
     deletion of a single comment.
     """
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -86,24 +79,26 @@ class CommentDetailApiView (GenericAPIView):
         serialized_data = self.serializer_class(self.comment)
         return Response({"comment": serialized_data.data,
                          "message": (
-                    "Successfully returned details of comment: {}".format(pk)
-                         )},
-                        status=status.HTTP_200_OK)
+                             "Successfully returned details of comment: {}".
+                             format(pk)
+                         )}, status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
         self.get_required_objects(request, pk)
         self.get_author_profile(request)
         if not self.is_author:
             return Response({
-                    "response": "You can only edit a comment you authored",
+                "response": "You can only edit a comment you authored",
                             "status_message": "Failed: Access denied"},
                             status=status.HTTP_403_FORBIDDEN)
         serializer = self.serializer_class(
             self.comment, self.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if self.comment.body != self.data['body']:
+            serializer.save()
         return Response({"comment": serializer.data,
-                    "message": "Successfully edited comment: {}".format(pk)},
+                         "message": "Successfully edited comment: {}".
+                         format(pk)},
                         status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
@@ -111,7 +106,7 @@ class CommentDetailApiView (GenericAPIView):
         self.get_author_profile(request)
         if not self.is_author:
             return Response({
-                    "response": "You can only delete a comment you authored",
+                "response": "You can only delete a comment you authored",
                             "message": "Failed: Access denied"},
                             status=status.HTTP_403_FORBIDDEN)
         self.comment.delete()
@@ -121,8 +116,7 @@ class CommentDetailApiView (GenericAPIView):
 
 
 class CommentReplyApiView (GenericAPIView):
-    """
-    This ApiView class handles the addition of a reply to a comment
+    """This ApiView class handles the addition of a reply to a comment
     and retrieving of all replies to that comment.
     """
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -146,33 +140,26 @@ class CommentReplyApiView (GenericAPIView):
             "replies": serialized_data.data,
             "repliesCount": replies.count(),
             "message": (
-            "Successfully returned replies to comment: {}".format(comment_pk)
-            )},
-            status=status.HTTP_200_OK
-        )
+                "Successfully returned replies to comment: {}".format(
+                    comment_pk))}, status=status.HTTP_200_OK)
 
     def post(self, request, comment_pk):
         """Make a reply to a comment"""
         self.get_required_objects(request, comment_pk)
         self.get_author_profile(request)
-        serializer = self.serializer_class(
-            data=self.data
-        )
+        serializer = self.serializer_class(data=self.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(
-            author=self.author,
-            comment=self.comment
-        )
+        serializer.save(author=self.author, comment=self.comment)
         return Response({"reply": serializer.data,
                          "message": (
-                "Successfully posted reply to comment: {}".format(comment_pk)
+                             "Successfully posted reply to comment: {}".format(
+                                 comment_pk)
                          )},
                         status=status.HTTP_201_CREATED)
 
 
 class CommentReplyDetailApiView (GenericAPIView):
-    """
-    The CommentReplyDetailApiView handles the retreiving, modification and 
+    """The CommentReplyDetailApiView handles the retreiving, modification and
     deletion of a single reply.
     """
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -194,7 +181,8 @@ class CommentReplyDetailApiView (GenericAPIView):
         serialized_data = self.serializer_class(self.reply)
         return Response({"reply": serialized_data.data,
                          "message": (
-                    "Successfully returned details of reply: {}".format(pk)
+                             "Successfully returned details of reply: {}".
+                             format(pk)
                          )},
                         status=status.HTTP_200_OK)
 
@@ -208,9 +196,11 @@ class CommentReplyDetailApiView (GenericAPIView):
                             status=status.HTTP_403_FORBIDDEN)
         serializer = self.serializer_class(self.reply, self.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if self.reply.body != self.data['body']:
+            serializer.save()
         return Response({"reply": serializer.data,
-                         "message": "Successfully edited reply: {}".format(pk)},
+                         "message": "Successfully edited reply: {}".format(pk)
+                         },
                         status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
@@ -225,3 +215,69 @@ class CommentReplyDetailApiView (GenericAPIView):
         return Response({
             "message": "Successfully deleted reply: {}".format(pk)},
             status=status.HTTP_200_OK)
+
+
+class CommentEditHistoryAPIView(GenericAPIView):
+    """This class handles returning edit history for a comment
+    that a user created on a particular article
+    """
+    renderer_classes = (JSONRenderer,)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOfCommentOrReply)
+
+    def get(self, request, slug, pk):
+        article = article_helpers.get_single_article_using_slug(slug)
+        if not article:
+            return Response({
+                "error": "Article with slug '{}' doesnot exist".format(slug),
+                "status": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+        comment_history = model_helpers.get_comment_edit_history(Comment, pk)
+        if not comment_history:
+            return Response({
+                "error": "Comment with id '{}' doesnot exist".format(pk),
+                "status": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+        comment = Comment.objects.get(pk=pk)
+        self.check_object_permissions(request, comment)
+        return Response({
+            "history": comment_history,
+            "message": "edit history for comment with ID: {}".format(pk),
+            "comment_edit_count": len(comment_history) - 1,
+            "status": status.HTTP_200_OK
+        }, status=status.HTTP_200_OK)
+
+
+class CommentReplyEditHistoryAPIView(GenericAPIView):
+    """This class handles returning edit history for a reply to a comment
+    that a user created on a particular comment
+    """
+    renderer_classes = (JSONRenderer,)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOfCommentOrReply,)
+
+    def get(self, request, comment_pk, pk):
+        comment = model_helpers.get_single_comment_using_id(Comment,
+                                                            comment_pk)
+        if not comment:
+            return Response({
+                "error": "Comment with id '{}' doesnot exist".format(
+                    comment_pk),
+                "status": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+        comment_reply_history = model_helpers.get_comment_edit_history(
+            CommentReply,
+            pk)
+        if not comment_reply_history:
+            return Response({
+                "error": "Comment reply with id '{}' doesnot exist".format(pk),
+                "status": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+        comment_reply = CommentReply.objects.get(pk=pk)
+        self.check_object_permissions(request, comment_reply)
+        return Response({
+            "history": comment_reply_history,
+            "message": "edit history for comment with ID: {}".format(pk),
+            "comment_reply_edit_count": len(comment_reply_history) - 1,
+            "status": status.HTTP_200_OK
+        }, status=status.HTTP_200_OK)
