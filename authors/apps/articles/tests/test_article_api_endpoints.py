@@ -97,8 +97,9 @@ class TestArticleView(base_class.BaseTest):
         self.create_article_and_authenticate_test_user()
         article = Article.objects.all().first()
         response = self.client.patch(self.article_url(article.slug),
-                                   data=test_article_data.update_article_data,
-                                   format='json')
+                                     data=test_article_data.
+                                     update_article_data,
+                                     format='json')
         self.assertIn('title', response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -111,9 +112,10 @@ class TestArticleView(base_class.BaseTest):
         self.create_article_and_authenticate_test_user_2()
         article = Article.objects.all().first()
         response = self.client.patch(reverse('articles:article-details',
-                                           kwargs={'slug': article.slug}),
-                                   data=test_article_data.update_article_data,
-                                   format='json')
+                                             kwargs={'slug': article.slug}),
+                                     data=test_article_data.
+                                     update_article_data,
+                                     format='json')
         expected_dict_reponse = {
             'detail': 'This article does not belong to you. Access denied'}
         self.assertDictEqual(expected_dict_reponse, response.data)
@@ -127,11 +129,12 @@ class TestArticleView(base_class.BaseTest):
         self.create_article_and_authenticate_test_user()
         article = Article.objects.all().first()
         response = self.client.patch(reverse('articles:article-details',
-                                           kwargs={'slug':
-                                                   test_article_data.
-                                                   un_existing_slug}),
-                                   data=test_article_data.update_article_data,
-                                   format='json')
+                                             kwargs={'slug':
+                                                     test_article_data.
+                                                     un_existing_slug}),
+                                     data=test_article_data.
+                                     update_article_data,
+                                     format='json')
         expected_dict = {
             'errors': 'sorry article with that slug doesnot exist'}
         self.assertDictEqual(expected_dict, response.data)
@@ -190,10 +193,12 @@ class TestArticleView(base_class.BaseTest):
         self.client.force_authenticate(user=user)
         self.create_article(user)
 
+
 class TestArticleLikeDislikeArticleViews(base_class.BaseTest):
     def setUp(self):
         super().setUp()
-        self.user, self.article = self.create_article_and_authenticate_test_user()
+        self.user, self.article = \
+            self.create_article_and_authenticate_test_user()
 
     def test_user_can_like_an_article(self):
         """a user should be able to to like an article if authenticated"""
@@ -205,54 +210,68 @@ class TestArticleLikeDislikeArticleViews(base_class.BaseTest):
     def test_user_can_dislike_an_article(self):
         """a user should be able to to like an article if authenticated"""
         self.assertFalse(self.article.is_disliked_by(self.user))
-        response = self.client.post(self.dislike_article_url(self.article.slug))
+        response = self.client.post(
+            self.dislike_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(self.article.is_liked_by(self.user))
 
     def test_user_can_get_like_status_for_article_they_do_not_like(self):
-        """a user should get the correct like status for an article they do not like"""
-        response = self.client.get(self.is_liked_article_url(self.article.slug))
+        """a user should get the correct like status for an article they do
+        not like"""
+        response = self.client.get(
+            self.is_liked_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["is_liked"], False)
 
     def test_user_can_get_like_status_for_article_they_like(self):
-        """a user should get the correct like status for an article they do like"""
+        """a user should get the correct like status for an article they do
+        like"""
         self.article.liked_by.add(self.user)
-        response = self.client.get(self.is_liked_article_url(self.article.slug))
+        response = self.client.get(
+            self.is_liked_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["is_liked"], True)
 
     def test_user_can_get_dislike_status_for_article_they_do_not_dislike(self):
-        """a user should get the correct like status for an article they do not dislike"""
-        response = self.client.get(self.is_disliked_article_url(self.article.slug))
+        """a user should get the correct like status for an article they do
+        not dislike"""
+        response = self.client.get(
+            self.is_disliked_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["is_disliked"], False)
 
     def test_user_can_get_dislike_status_for_article_they_dislike(self):
-        """a user should get the correct like status for an article they do dislike"""
+        """a user should get the correct like status for an article they do
+        dislike"""
         self.article.disliked_by.add(self.user)
-        response = self.client.get(self.is_disliked_article_url(self.article.slug))
+        response = self.client.get(
+            self.is_disliked_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["is_disliked"], True)
 
     def test_unauthorized_user_cannot_like_an_article(self):
-        """a request without a valid token does not allow a user to like an article"""
+        """a request without a valid token does not allow a user to like an
+        article"""
         self.client.force_authenticate(user=None)
         response = self.client.post(self.like_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_unauthorized_user_cannot_dislike_an_article(self):
-        """a request without a valid token does not allow a user to dislike an article"""
+        """a request without a valid token does not allow a user to dislike an
+        article"""
         self.client.force_authenticate(user=None)
-        response = self.client.post(self.dislike_article_url(self.article.slug))
+        response = self.client.post(
+            self.dislike_article_url(self.article.slug))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_can_the_number_of_people_that_liked_an_article(self):
         """a user can get an article's like count"""
         response = self.client.get(self.article_url(self.article.slug))
-        self.assertEqual(response.data['like_count'], 0)  # we haven't liked any article yet
+        # we haven't liked any article yet
+        self.assertEqual(response.data['like_count'], 0)
 
     def test_user_can_the_number_of_people_that_disliked_an_article(self):
         """a user can get an article's dislike count"""
         response = self.client.get(self.article_url(self.article.slug))
-        self.assertEqual(response.data['dislike_count'], 0)  # we haven't disliked any article yet
+        # we haven't disliked any article yet
+        self.assertEqual(response.data['dislike_count'], 0)
