@@ -23,3 +23,9 @@ valid_article_data_with_tags = {
     }
 }
 un_existing_slug = 'allInvalidHomie-jk23ll'
+
+one_min_read_text = "Hey there, how are you doing? \
+        Just wanted to let you know that Summer is almost here\
+        you should plan on getting your vacation in order. Thanks."
+
+zero_min_read_text = ""
