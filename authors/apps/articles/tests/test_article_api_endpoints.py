@@ -185,6 +185,15 @@ class TestArticleView(base_class.BaseTest):
         self.assertDictEqual(expected_dict, response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_tags_when_none_exists(self):
+        """
+        Method tests when a user tries getting tags if no articles are tagged
+        """
+        self.create_article_and_authenticate_test_user()
+        response = self.client.get(reverse('articles:tags'))
+        expected_dict = {'tags': 'sorry no tags exist in the Database yet'}
+        self.assertDictEqual(expected_dict, response.data)
+
     def create_article_and_authenticate_test_user(self):
         """
         This method create an article and force authenticates a user

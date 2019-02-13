@@ -36,3 +36,30 @@ def favorite_unfavorite_article(request, slug,
         data = {'errors': 'Article with this slug doesnot exist'}
         status_code = status.HTTP_404_NOT_FOUND
     return data, status_code
+
+
+def get_all_available_tags():
+    """
+    This method returns all tags authors created if any
+    """
+    try:
+        articles = Article.objects.all()
+        articles_w_tags = [a for a in articles if a.tag_list]
+        merged_tags_list = []
+        if articles_w_tags:
+            all_tags_list = [a.tag_list for a in articles_w_tags]
+            for tag in all_tags_list:
+                merged_tags_list += tag
+            return set(merged_tags_list)
+    except Article.DoesNotExist:
+        return None
+
+
+def get_all_articles_with_same_tag_name(tag_name):
+    """
+    This method returns all articles with the same tag name
+    """
+    articles_with_same_name = Article.objects.filter(
+        tag_list__contains=[tag_name])
+    if articles_with_same_name:
+        return articles_with_same_name

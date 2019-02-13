@@ -253,3 +253,19 @@ class ArticleRatingAPIView(generics.GenericAPIView):
             return Response({'articles': rate_data,
                              'message': message},
                             status=status.HTTP_201_CREATED)
+
+
+class ArticleTagsApiView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        tags = get_all_available_tags()
+        if tags:
+            return Response(
+                {'tags': list(tags)},
+                status=status.HTTP_200_OK
+            )
+        msg = 'sorry no tags exist in the Database yet'
+        return Response(
+            {'tags': msg},
+            status=status.HTTP_404_NOT_FOUND)

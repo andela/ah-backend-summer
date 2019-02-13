@@ -5,6 +5,7 @@ from . import views
 app_name = "articles"
 
 urlpatterns = [
+    path('tags', views.ArticleTagsApiView.as_view(), name='tags'),
     path('<slug>/like', views.LikeDislikeArticleAPIView.as_view(),
          kwargs={'action': 'like'},
          name="like-article"),
