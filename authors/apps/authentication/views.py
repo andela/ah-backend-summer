@@ -28,6 +28,7 @@ from google.auth.transport import requests
 from .social_login import(login_or_register_social_user)
 from .models import User
 
+
 class RegistrationAPIView(GenericAPIView):
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
@@ -56,7 +57,7 @@ class RegistrationAPIView(GenericAPIView):
         new_user.save()
         current_site = get_current_site(request)
         resp_data = self.email_notification(
-                                    new_user, current_site, token)
+            new_user, current_site, token)
 
         return Response(resp_data, status=status.HTTP_201_CREATED)
 
@@ -110,12 +111,12 @@ class AccountActivateAPIView(GenericAPIView):
         user_id = User.decode_token(token)
         if not isinstance(user_id, int):
             return Response(
-                    {'err_msg': user_id}, status=status.HTTP_400_BAD_REQUEST)
+                {'err_msg': user_id}, status=status.HTTP_400_BAD_REQUEST)
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist as e:
             return Response(
-                    {'err_msg': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                {'err_msg': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         if user and not user.is_active:
             user.is_active = True
             user.save()
@@ -127,7 +128,7 @@ class AccountActivateAPIView(GenericAPIView):
         elif user.is_active:
             return Response({
                 "msg": "This account is already activated"
-                }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPIView(GenericAPIView):
@@ -147,6 +148,7 @@ class LoginAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
@@ -175,6 +177,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TwitterAuthAPIView(GenericAPIView):
     """
     Handle login of a Twitter user via the Twitter Api. 
@@ -196,7 +199,7 @@ class TwitterAuthAPIView(GenericAPIView):
         access_token_secret = request.data.get('access_token_secret', {})
 
         serializer = self.serializer_class(data={'access_token': access_token,
-                                                 'access_token_secret': access_token_secret
+                                    'access_token_secret': access_token_secret
                                                  })
         serializer.is_valid(raise_exception=True)
 
@@ -213,6 +216,7 @@ class TwitterAuthAPIView(GenericAPIView):
         twitter_user = twitter_user.__dict__
 
         return login_or_register_social_user(twitter_user)
+
 
 class GoogleAuthAPIView(GenericAPIView):
     """
@@ -243,6 +247,7 @@ class GoogleAuthAPIView(GenericAPIView):
 
         return login_or_register_social_user(google_user)
 
+
 class FacebookAuthAPIView(GenericAPIView):
     """
     Handle login of a Facebook user via the Facebook Graph API. 
@@ -269,6 +274,7 @@ class FacebookAuthAPIView(GenericAPIView):
 
         return login_or_register_social_user(facebook_user)
 
+
 class PasswordResetRequestAPIView(GenericAPIView):
     """
     This handles receiving the requester's email address and sends
@@ -285,12 +291,15 @@ class PasswordResetRequestAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_email = user.get("email", None)
         PasswordResetManager(request).send_password_reset_email(user_email)
+        msg = "An email has been sent to your \
+            mailbox with instructions to reset your password"
         return Response(
             {
-                "message":"An email has been sent to your mailbox with instructions to reset your password",
+                "message": msg,
             },
             status=status.HTTP_200_OK
         )
+
 
 class PasswordResetAPIView(GenericAPIView):
     """
@@ -304,10 +313,13 @@ class PasswordResetAPIView(GenericAPIView):
     def get(self, request, token):
         user = PasswordResetManager(request).get_user_from_encoded_token(token)
         if user is None:
-            return Response({"message":"Invalid token!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Invalid token!"},
+                            status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {
-                "message":"Token is valid. OK to send new password information"
+                "message": (
+                    "Token is valid. OK to send new password information"
+                )
             },
             status=status.HTTP_200_OK
         )
@@ -315,18 +327,18 @@ class PasswordResetAPIView(GenericAPIView):
     def post(self, request, token):
         data = request.data.get(
             'user', {}) if 'user' in request.data else request.data
-        print(data)
         user = PasswordResetManager(request).get_user_from_encoded_token(token)
         if user is None:
             return Response(
                 {
-                    "message":"Your token has expired. Please start afresh."
+                    "message": "Your token has expired. Please start afresh."
                 },
                 status=status.HTTP_400_BAD_REQUEST
-            ) 
+            )
         email = user.get('email')
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         new_password = data.get("new_password")
         PasswordResetManager(request).update_password(email, new_password)
-        return Response({"message":"Your password has been reset"} , status=status.HTTP_200_OK)
+        return Response({"message": "Your password has been reset"},
+                        status=status.HTTP_200_OK)
