@@ -15,11 +15,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='article',
             name='disliked_by',
-            field=models.ManyToManyField(related_name='disliked_articles', related_query_name='disliked_article', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(
+                related_name='disliked_articles',
+                related_query_name='disliked_article',
+                to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='article',
             name='liked_by',
-            field=models.ManyToManyField(related_name='liked_articles', related_query_name='liked_article', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(
+                related_name='liked_articles',
+                related_query_name='liked_article',
+                to=settings.AUTH_USER_MODEL),
         ),
     ]

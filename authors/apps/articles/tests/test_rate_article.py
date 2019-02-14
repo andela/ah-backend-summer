@@ -34,9 +34,10 @@ class TestRatingModel(base_class.BaseTest):
         Test rating an article fails when author tries to rate their
         own article
         """
-        response = self.client.post(self.url_rate_article,
-                                    data=test_rate_article_data.valid_rate_data,
-                                    format='json')
+        response = self.client.post(
+            self.url_rate_article,
+            data=test_rate_article_data.valid_rate_data,
+            format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("Author can not rate their own article",
                       response.data.get('errors'))
@@ -78,9 +79,10 @@ class TestRatingModel(base_class.BaseTest):
         self.client.post(self.url_rate_article,
                          data=test_rate_article_data.valid_rate_data,
                          format='json')
-        response = self.client.post(self.url_rate_article,
-                                    data=test_rate_article_data.valid_rate_data,
-                                    format='json')
+        response = self.client.post(
+            self.url_rate_article,
+            data=test_rate_article_data.valid_rate_data,
+            format='json')
         self.assertEqual(response.status_code,
                          status.HTTP_422_UNPROCESSABLE_ENTITY)
         self.assertIn("You already rated this article",
@@ -88,7 +90,7 @@ class TestRatingModel(base_class.BaseTest):
 
     def test_get_rate_average(self):
         """
-        Test rating an article passes when it's not author rating 
+        Test rating an article passes when it's not author rating
         and returns average
         """
         self.user = self.create_another_user_in_db()

@@ -17,12 +17,17 @@ class Migration(migrations.Migration):
             name='Rating',
             fields=[
                 ('id', models.AutoField(auto_created=True,
-                                        primary_key=True, serialize=False, verbose_name='ID')),
+                                        primary_key=True, serialize=False,
+                                        verbose_name='ID')),
                 ('rate_score', models.IntegerField(blank=True, null=True)),
-                ('article', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
-                                              related_name='article_ratings', to='articles.Article')),
+                ('article', models.ForeignKey(
+                    blank=True, null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='article_ratings',
+                    to='articles.Article')),
                 ('user', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                    on_delete=django.db.models.deletion.CASCADE,
+                    to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

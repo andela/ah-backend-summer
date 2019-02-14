@@ -5,9 +5,9 @@ from rest_framework import status
 
 def login_or_register_social_user(social_user):
     """
-    login_or_register_social_user method, takes in twitter or facebook or google
-    user object and verifies if the user is already in the database and returns
-    logged in user with a login token if user exists in database. 
+    login_or_register_social_user method, takes in twitter or facebook or
+    google user object and verifies if the user is already in the database and
+    returns logged in user with a login token if user exists in database.
     Else, it registers the user and logs in the user
     """
     # find user in database

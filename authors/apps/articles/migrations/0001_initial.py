@@ -16,7 +16,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Article',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False,
+                                        verbose_name='ID')),
                 ('title', models.CharField(max_length=100)),
                 ('slug', models.SlugField(blank=True, unique=True)),
                 ('description', models.CharField(max_length=100)),
@@ -24,9 +26,13 @@ class Migration(migrations.Migration):
                 ('favorited', models.BooleanField(default=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True, null=True)),
-                ('image', models.ImageField(blank=True, upload_to='assets/articles/images')),
+                ('image', models.ImageField(blank=True,
+                                            upload_to='assets/articles/images')
+                 ),
                 ('body', models.TextField()),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='profiles.Profile')),
+                ('author', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE,
+                    to='profiles.Profile')),
             ],
             options={
                 'ordering': ['-created_at'],

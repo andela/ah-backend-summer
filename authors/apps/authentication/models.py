@@ -11,7 +11,6 @@ from authors.apps.profiles.models import Profile
 from django.db.models.signals import post_save
 
 
-
 class UserManager(BaseUserManager):
     """
     Django requires that custom users define their own Manager class. By
@@ -144,7 +143,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def decode_token(token):
         try:
             payload = jwt.decode(
-                    token, settings.SECRET_KEY, algorithms=['HS256'])
+                token, settings.SECRET_KEY, algorithms=['HS256'])
             return payload['id']
         except jwt.ExpiredSignatureError:
             return 'Token expired'
@@ -159,5 +158,5 @@ def profile_post_save_reciever(*args, **kwargs):
     user.username = profile.username
     user.save(update_fields=['username'])
 
-post_save.connect(profile_post_save_reciever, sender=Profile)
 
+post_save.connect(profile_post_save_reciever, sender=Profile)

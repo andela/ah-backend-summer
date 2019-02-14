@@ -51,6 +51,7 @@ non_profile_fields_data = {
     "okay": "ksbajk"
 }
 
-no_image_error = "The submitted data was not a file. Check the encoding type on the form."
+no_image_error = "The submitted data was not a file. \
+Check the encoding type on the form."
 
 no_username_error = "This field may not be blank."

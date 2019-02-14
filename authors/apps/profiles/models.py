@@ -11,7 +11,26 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     image = models.ImageField(default="author.jpg", upload_to="profile")
-    timestamp = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    follows = models.ManyToManyField('self', related_name='followed_by',
+                                     symmetrical=False)
+
+    def follow(self, profile):
+        # Follow if we are not already following
+        self.follows.add(profile)
+
+    def unfollow(self, profile):
+        # Unfollow if we are already following.
+        self.follows.remove(profile)
+
+    def is_following(self, profile):
+        # True if we are following, False otherwise.
+        return self.follows.filter(pk=profile.pk).exists()
+
+    def is_followed_by(self, profile):
+        # True if profile follows us, False otherwise.
+        return self.followed_by.filter(pk=profile.pk).exists()
 
     def __str__(self):
         return self.username
