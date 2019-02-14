@@ -22,7 +22,7 @@ by leveraging the modern web.
 The API can be accessed at the `/api/{version}` endpoint and is versioned as implied by the endpoint. The current version in development is `v1`.
 
 ### Live API and Docs
-The API version in `development`, mirroring the `develop` branch is currently hosted at [here](http://ah-backend-summer-staging.herokuapp.com/api/v1/).  
+The API version in `development`, mirroring the `develop` branch is currently hosted at [here](http://ah-backend-summer-staging.herokuapp.com/api/v1/).
 The live API docs are hosted [here](http://ah-backend-summer-staging.herokuapp.com/).
 
 The preferred JSON object to be returned by the API should be structured as follows:
@@ -295,6 +295,7 @@ Authentication optional, returns a Profile
     "last_name": "Doe",
     "bio": "I work at statefarm",
     "image": "image-link",
+    "date_of_birth": "12/09/1998"
   }
 }
 ```

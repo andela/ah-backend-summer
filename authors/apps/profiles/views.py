@@ -25,7 +25,10 @@ class ProfileRetrieveUpdateView(generics.GenericAPIView):
             serializer = self.serializer_class(profile, context={
                 'request': request
             })
-            response_data = {"profile": serializer.data}
+            response_data = {
+                "profile": serializer.data,
+                "message": "successfully returned profile details"
+                }
             return Response(response_data, status=status.HTTP_200_OK)
         return Response({
             "error": "Profile with this username does not exist",
@@ -175,3 +178,20 @@ class ProfileFollowersAPIView(generics.GenericAPIView):
             'followers': followers,
             'status': status.HTTP_200_OK}
         return Response(data=msg, status=status.HTTP_200_OK)
+
+
+class UserProfileListAPIView(generics.ListAPIView):
+    """
+    This class return all user profiles in the available in the database
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = ProfileSerializer
+
+    def get(self, request):
+        profiles = Profile.objects.all()
+        serializer = self.serializer_class(profiles, many=True)
+        response_data = {
+            "profiles": serializer.data,
+            "message": "Successfully returned all users profiles"
+            }
+        return Response(response_data, status=status.HTTP_200_OK)
