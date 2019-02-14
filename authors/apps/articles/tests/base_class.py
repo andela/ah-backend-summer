@@ -49,3 +49,10 @@ class BaseTest(base_class.BaseTest):
         user2 = self.create_another_user_in_db()
         self.client.force_authenticate(user=user2)
         return user2
+
+    def create_article(self, user):
+        return Article.objects.create(
+            title='whale',
+            description='fish',
+            body='In water',
+            author=Profile.objects.get(user=user.id))

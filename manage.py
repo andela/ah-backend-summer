@@ -1,21 +1,12 @@
 #!/usr/bin/env python
-import os
 import sys
 
-from dotenv import load_dotenv, find_dotenv
+from authors.apps.core.utils import load_settings_file
 
 if __name__ == "__main__":
 
-    # load environment variables from an optional .env file
-    load_dotenv(find_dotenv())
+    load_settings_file()
 
-    environment = os.environ.get('ENVIRONMENT', 'production')
-    if environment == 'development':
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.development")
-    elif environment == 'staging':
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.staging")
-    else:
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.production")
     try:
         from django.core.management import execute_from_command_line
     except ImportError:

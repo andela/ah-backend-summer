@@ -22,6 +22,9 @@ class Comment(models.Model):
     def __str__(self):
         return self.body
 
+    def comment_is_my_own(self):
+        return self.author == self.article.author
+
 
 class CommentReply(models.Model):
     """The model defines the Comment-Replies table as stored in the DB

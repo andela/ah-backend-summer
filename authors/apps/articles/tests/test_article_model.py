@@ -1,7 +1,11 @@
+from unittest.mock import MagicMock, patch
+
+from authors.apps.articles.signals import ArticlesSignalSender
 from ...authentication.tests import base_class
 from ..models import Article
 from ...profiles.models import Profile
 from ..utils import model_helpers
+from .base_class import BaseTest as ArticlesBaseTest
 
 
 class TestArticleModel(base_class.BaseTest):
@@ -63,3 +67,22 @@ class TestArticleModel(base_class.BaseTest):
             author=Profile.objects.get(user=user.id),
             tag_list=['weed', 'cow'])
         return article
+
+
+class SignalTests(ArticlesBaseTest):
+    """
+    Test that expected signals are emitted when events take place
+    """
+    def test_new_article_published_signal_emitted_on_new_article(self):
+        # mock this method, so we can track how it is called
+        signal = 'authors.apps.articles.signals.article_published_signal.send'
+        with patch(signal) as article_published_signal_mock:
+            # it hasn't been called yet
+            article_published_signal_mock.assert_not_called()
+            user = self.activated_user()
+            # creating an article should trigger it
+            article = self.create_article(user)
+            # it should have been called
+            article_published_signal_mock.assert_called_once_with(
+                ArticlesSignalSender,
+                article=article)

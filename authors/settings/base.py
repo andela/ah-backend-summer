@@ -24,6 +24,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # locations this application can be hosted
 ALLOWED_HOSTS = [".herokuapp.com", "127.0.0.1", "localhost"]
 
+# url- since we can't access this without a request, we'll have to hard code it
+# for those situations where we'll need it anyways
+URL = 'http://127.0.0.1:8000'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -42,12 +46,14 @@ INSTALLED_APPS = [
     'drf_yasg',
     'mailer',
     'django_filters',
+    'django_celery_results',
 
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
     'authors.apps.articles',
     'authors.apps.comments',
+    'authors.apps.notifications',
 ]
 
 MIDDLEWARE = [
@@ -114,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Nairobi'
 
 USE_I18N = True
 
@@ -140,6 +146,7 @@ CORS_ORIGIN_WHITELIST = (
 # called `INSTALLED_APPS`.
 AUTH_USER_MODEL = 'authentication.User'
 
+# rest framework settings
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'authors.apps.core.exceptions.core_exception_handler',
     'NON_FIELD_ERRORS_KEY': 'error',
@@ -148,11 +155,21 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+
+# endpoint to hit for media files
 MEDIA_URL = '/media/'
-# For Gmail or google Apps
+
+# email settings
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.environ.get('USER_EMAIL')
 EMAIL_HOST_PASSWORD = os.environ.get('USER_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# celery settings
+
+# result backend (where celery will push the results of running each task)
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TIMEZONE = 'Africa/Nairobi'

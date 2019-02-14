@@ -28,6 +28,12 @@
     },
     "USER_PASSWORD": {
       "required": true
+    },
+    "CLOUDAMQP_APIKEY": {
+      "required": true
+    },
+    "CLOUDAMQP_URL": {
+      "required": true
     }
   },
   "formation": {},
