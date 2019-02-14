@@ -48,7 +48,7 @@ class TestArticleView(base_class.BaseTest):
         try getting articles when the db (Database) is empty
         """
         response = self.client.get(self.articles_url)
-        self.assertEqual([], response.data)
+        self.assertEqual([], response.data['results'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_retrieve_all_articles_if_the_db_is_not_empty(self):
@@ -58,8 +58,8 @@ class TestArticleView(base_class.BaseTest):
         """
         self.create_article_and_authenticate_test_user()
         response = self.client.get(self.articles_url)
-        self.assertIn('title', response.data[0])
-        self.assertIn('slug', response.data[0])
+        self.assertIn('title', response.data['results'][0])
+        self.assertIn('slug', response.data['results'][0])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_retrieve_single_article(self):
@@ -96,10 +96,10 @@ class TestArticleView(base_class.BaseTest):
         """
         self.create_article_and_authenticate_test_user()
         article = Article.objects.all().first()
-        response = self.client.patch(self.article_url(article.slug),
-                                     data=test_article_data.
-                                     update_article_data,
-                                     format='json')
+        response = self.client.patch(
+            self.article_url(article.slug),
+            data=test_article_data.update_article_data,
+            format='json')
         self.assertIn('title', response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -111,11 +111,11 @@ class TestArticleView(base_class.BaseTest):
         self.create_article_and_authenticate_test_user()
         self.create_article_and_authenticate_test_user_2()
         article = Article.objects.all().first()
-        response = self.client.patch(reverse('articles:article-details',
-                                             kwargs={'slug': article.slug}),
-                                     data=test_article_data.
-                                     update_article_data,
-                                     format='json')
+        response = self.client.patch(
+            reverse('articles:article-details',
+                    kwargs={'slug': article.slug}),
+            data=test_article_data.update_article_data,
+            format='json')
         expected_dict_reponse = {
             'detail': 'This article does not belong to you. Access denied'}
         self.assertDictEqual(expected_dict_reponse, response.data)
@@ -128,11 +128,11 @@ class TestArticleView(base_class.BaseTest):
         """
         self.create_article_and_authenticate_test_user()
         article = Article.objects.all().first()
-        response = self.client.patch(reverse(
-            'articles:article-details',
-            kwargs={'slug':
-                    test_article_data.
-                    un_existing_slug}),
+        response = self.client.patch(
+            reverse('articles:article-details',
+                    kwargs={'slug':
+                            test_article_data.
+                            un_existing_slug}),
             data=test_article_data.update_article_data,
             format='json')
         expected_dict = {

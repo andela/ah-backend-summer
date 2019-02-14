@@ -102,4 +102,4 @@ class TestRatingModel(base_class.BaseTest):
                                    format='json')
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['average_ratings'], 2)
+        self.assertEqual(response.data['results'][0]['average_ratings'], 2)
