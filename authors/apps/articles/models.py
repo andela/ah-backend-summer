@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
 from django.contrib.postgres.fields import ArrayField
+from rest_framework.reverse import reverse
 
 from ..profiles import models as ProfileModel
 from .utils import utils
@@ -106,6 +107,11 @@ class Article(models.Model):
             model=Rating,
             article=self.pk
         )
+
+    @property
+    def url(self):
+        return settings.URL + reverse("articles:article-details",
+                                      kwargs={'slug': self.slug})
 
 
 def article_pre_save_receiver(sender, instance, *args, **kwargs):

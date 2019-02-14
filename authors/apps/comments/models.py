@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.db import models
+from rest_framework.reverse import reverse
 
 from ..profiles.models import Profile
 from ..articles.models import Article
@@ -22,6 +24,14 @@ class Comment(models.Model):
     def __str__(self):
         return self.body
 
+    def comment_is_my_own(self):
+        return self.author == self.article.author
+
+    @property
+    def url(self):
+        return settings.URL + reverse('comments:comment-details',
+                                      kwargs={"pk": self.pk})
+
 
 class CommentReply(models.Model):
     """The model defines the Comment-Replies table as stored in the DB
@@ -41,3 +51,8 @@ class CommentReply(models.Model):
 
     def __str__(self):
         return self.body
+
+    @property
+    def url(self):
+        return settings.URL + reverse('comments:comment-reply-details',
+                                      kwargs={"pk": self.pk})

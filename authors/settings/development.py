@@ -10,7 +10,11 @@ DEBUG = True
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(env='DEVELOPMENT_DATABASE_URL', engine='django.db.backends.postgresql')
+    'default': dj_database_url.config(
+        env='DEVELOPMENT_DATABASE_URL',
+        engine='django.db.backends.postgresql')
 }
 
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'media')
+
+CELERY_BROKER = os.environ.get('CELERY_BROKER')

@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.conf import settings
+from rest_framework.reverse import reverse
 
 
 class Profile(models.Model):
@@ -31,6 +32,11 @@ class Profile(models.Model):
     def is_followed_by(self, profile):
         # True if profile follows us, False otherwise.
         return self.followed_by.filter(pk=profile.pk).exists()
+
+    @property
+    def url(self):
+        return settings.URL + reverse('profiles:profile-detail-update',
+                                      kwargs={"username": self.username})
 
     def __str__(self):
         return self.username
