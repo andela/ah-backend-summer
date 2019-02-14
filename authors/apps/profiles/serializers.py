@@ -3,9 +3,24 @@ from .models import Profile
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    following = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
-        fields = ("username", "first_name", "last_name", "bio", "image", )
+        fields = ("username", "first_name", "last_name", "bio", "image",
+                  "following",)
+
+    def get_following(self, instance):
+        """
+        Method to check whether logged in user is following returned
+        profile
+        """
+        request = self.context.get('request', None)
+        if request is None:
+            return False
+        follower = request.user.profile
+        followee = instance
+        return follower.is_following(followee)
 
     def validate(self, data):
         """

@@ -22,7 +22,9 @@ class ProfileRetrieveUpdateView(generics.GenericAPIView):
     def get(self, request, username):
         profile = self.get_object(username)
         if profile:
-            serializer = self.serializer_class(profile)
+            serializer = self.serializer_class(profile, context={
+                'request': request
+            })
             response_data = {"profile": serializer.data}
             return Response(response_data, status=status.HTTP_200_OK)
         return Response({
@@ -142,8 +144,8 @@ class ProfileFollowingAPIView(generics.GenericAPIView):
         if following is None or following == []:
             msg = {
                 'message': 'You are not following anyone.',
-                'status': status.HTTP_400_BAD_REQUEST}
-            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+                'status': status.HTTP_204_NO_CONTENT}
+            return Response(data=msg, status=status.HTTP_204_NO_CONTENT)
         msg = {
             'following': following,
             'status': status.HTTP_200_OK}
@@ -167,8 +169,8 @@ class ProfileFollowersAPIView(generics.GenericAPIView):
         if followers is None or followers == []:
             msg = {
                 'message': 'You have no followers.',
-                'status': status.HTTP_400_BAD_REQUEST}
-            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+                'status': status.HTTP_204_NO_CONTENT}
+            return Response(data=msg, status=status.HTTP_204_NO_CONTENT)
         msg = {
             'followers': followers,
             'status': status.HTTP_200_OK}
