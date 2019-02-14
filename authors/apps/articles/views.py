@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework import generics
-from rest_framework import permissions
+from rest_framework import generics, permissions, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from . import (
     serializers,
@@ -14,6 +14,7 @@ from ..profiles import models as profile_model
 
 from .models import Rating, Article
 from .paginators import ArticleLimitOffsetPagination
+from .utils.custom_filters import ArticleFilter
 
 
 class ArticlesApiView (generics.ListCreateAPIView):
@@ -25,6 +26,9 @@ class ArticlesApiView (generics.ListCreateAPIView):
     serializer_class = serializers.ArticleSerializer
     renderer_classes = (ArticleJSONRenderer,)
     pagination_class = ArticleLimitOffsetPagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
+    filter_class = ArticleFilter
+    search_fields = ('author__username', 'description', 'body', 'title', )
 
     def post(self, request):
         data = request.data
