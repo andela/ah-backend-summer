@@ -8,7 +8,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ("username", "first_name", "last_name", "bio", "image",
-                  "following",)
+                  "following", "date_of_birth")
 
     def get_following(self, instance):
         """

@@ -16,6 +16,10 @@ class Profile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     follows = models.ManyToManyField('self', related_name='followed_by',
                                      symmetrical=False)
+    date_of_birth = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.username
 
     def follow(self, profile):
         # Follow if we are not already following

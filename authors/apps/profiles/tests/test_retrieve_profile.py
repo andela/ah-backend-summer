@@ -37,3 +37,18 @@ class TestRetrieveProfile(BaseTest):
                                    HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["profile"]["username"], username)
+
+    def test_unauthenticated_user_cannot_retrieve_profile_list(self):
+        response = self.client.get(
+            reverse("profiles:profile-list")
+        )
+        self.assertIn("credentials", response.data["detail"])
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_authenticated_user_can_retrieve_profile_list(self):
+        response = self.client.get(
+            reverse("profiles:profile-list"),
+            HTTP_AUTHORIZATION=f"Bearer {self.token}"
+        )
+        self.assertIn("username", response.data["profiles"][0])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
