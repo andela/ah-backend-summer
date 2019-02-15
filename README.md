@@ -174,6 +174,16 @@ The preferred JSON object to be returned by the API should be structured as foll
 }
 ```
 
+
+### Notification Settings
+
+```source-json
+{
+    "allow_in_app_notifications": true,
+    "allow_email_notifications": false,
+}
+```
+
 ### Errors and Status Codes
 
 If a request fails any validations, expect errors in the following format:
@@ -196,11 +206,11 @@ If a request fails any validations, expect errors in the following format:
 
 404 for Not found requests, when a resource can't be found to fulfill the request
 
-## Endpoints:
+# Endpoints:
 
 Prefix `/api/{version}` is implied.
 
-### Authentication:
+## Authentication:
 
 `POST /users/login`
 
@@ -265,6 +275,8 @@ Authentication required, returns the User
 
 Accepted fields: `email`, `username`, `password`
 
+## Profiles
+
 ### Get Profile
 
 `GET /profiles/:username`
@@ -291,6 +303,8 @@ Accepted fields: `username`, `first_name`, `last_name`, `bio`, `image`
 
 Authentication required, returns the updated Profile
 
+## Following
+
 ### Follow user
 
 `POST /profiles/:username/follow`
@@ -306,6 +320,8 @@ No additional parameters required
 Authentication required, returns a Profile
 
 No additional parameters required
+
+## Articles
 
 ### List Articles
 
@@ -400,6 +416,8 @@ The `slug` also gets updated when the `title` is changed
 
 Authentication required
 
+## Comments
+
 ### Add Comments to an Article
 
 `POST /articles/:slug/comments`
@@ -429,6 +447,8 @@ Authentication optional, returns multiple comments
 
 Authentication required
 
+## Favoriting Articles
+
 ### Favorite Article
 
 `POST /articles/:slug/favorite`
@@ -443,6 +463,8 @@ No additional parameters required
 Authentication required, returns the Article
 
 No additional parameters required
+
+## Like/ Dislike
 
 ### Like Article
 
@@ -494,8 +516,38 @@ Returns the dislike status
 }
 ```
 
+## Tags
+
 ### Get Tags
 
 `GET /tags`
 
 No additional parameters required
+
+
+## Notifications
+
+### Get a user's unread notifications
+
+`GET /notifications`
+
+
+### Set a user's notifications as read
+
+`POST /notifications/read`
+
+Authentication required
+
+### Get a user's notification settings
+
+`GET /notifications/settings`
+
+Authentication required
+
+### Update a user's notification settings
+
+`PATCH /notifications/settings`
+
+Authentication required
+
+Allows fields displayed in the notification settings `json`, both optional

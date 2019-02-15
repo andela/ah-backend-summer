@@ -7,21 +7,11 @@ For more information on this file, see
 https://docs.djangoproject.com/en/1.11/howto/deployment/wsgi/
 """
 
-import os
 
 from django.core.wsgi import get_wsgi_application
 
-# load environment variables from an optional .env file
-from dotenv import load_dotenv, find_dotenv
+from authors.apps.core.utils import load_settings_file
 
-load_dotenv(find_dotenv())
-
-environment = os.environ.get('ENVIRONMENT', 'production')
-if environment == 'development':
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.development")
-elif environment == 'staging':
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.staging")
-else:
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authors.settings.production")
+load_settings_file()
 
 application = get_wsgi_application()

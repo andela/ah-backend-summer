@@ -9,8 +9,14 @@ DEBUG = False
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(env='STAGING_DATABASE_URL', engine='django.db.backends.postgresql')
+    'default': dj_database_url.config(
+        env='STAGING_DATABASE_URL',
+        engine='django.db.backends.postgresql')
 }
+
+# url- since we can't access this without a request, we'll have to hard code it
+# for those situations where we'll need it anyways
+URL = 'http://ah-backend-summer-staging.herokuapp.com'
 
 # allow static file compression
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -23,3 +29,8 @@ CLOUDINARY_STORAGE = {
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CELERY_BROKER = os.environ.get('CLOUDAMQP_URL')
+
+# limit connections to 3- Heroku specific, so we don't spend money
+BROKER_POOL_LIMIT = 3

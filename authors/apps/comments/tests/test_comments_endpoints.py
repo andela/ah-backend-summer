@@ -11,6 +11,7 @@ import json
 
 
 class TestCommenting(base_class.BaseTest):
+    pass
 
     def setUp(self):
         super().setUp()

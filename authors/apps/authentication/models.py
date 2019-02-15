@@ -102,6 +102,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     @property
+    def profile(self):
+        return Profile.objects.get(user=self)
+
+    @property
     def get_full_name(self):
         """
         This method is required by Django for things like handling emails.

@@ -29,5 +29,7 @@ urlpatterns = [
                                      namespace='comments')),
     path('api/v1/profiles/', include('authors.apps.profiles.urls',
                                      namespace='profiles')),
+    path('api/v1/notifications/', include('authors.apps.notifications.urls',
+                                          namespace='notifications')),
     path('', schema_view.with_ui('swagger'), name='schema-swagger-ui')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
