@@ -28,4 +28,6 @@ urlpatterns = [
          name='article-unfavorite'),
     path('<slug>/rate', views.ArticleRatingAPIView.as_view(),
          name='article-rates'),
+    path('<slug>/bookmark', views.ArticleBookmarkAPIView.as_view(),
+         name='article-bookmark'),
 ]

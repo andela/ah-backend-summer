@@ -1,5 +1,5 @@
 from rest_framework import status
-from ..models import Article
+from ..models import Article, Bookmark
 
 
 def get_single_article_using_slug(slug):
@@ -63,3 +63,22 @@ def get_all_articles_with_same_tag_name(tag_name):
         tag_list__contains=[tag_name])
     if articles_with_same_name:
         return articles_with_same_name
+
+
+def get_single_bookmark_user(article, user):
+    """
+    This method returns all bookmarks of a user
+    """
+    return Bookmark.objects.filter(article=article, user=user)
+
+
+def get_single_bookmark_or_create_bookmark(article, user):
+    """
+    This method returns a bookmarks
+    """
+    try:
+        obj = Bookmark.objects.get(article=article, user=user)
+        return obj
+    except Bookmark.DoesNotExist:
+        Bookmark.objects.create(article=article, user=user)
+        return None

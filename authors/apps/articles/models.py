@@ -139,3 +139,12 @@ class Rating(models.Model):
                                 related_name='article_ratings',
                                 blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class Bookmark(models.Model):
+    """
+    Authenticated users can bookmark articles for reading later
+    """
+    article = models.ForeignKey(Article, on_delete=models.CASCADE,
+                                related_name='is_bookmarked')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

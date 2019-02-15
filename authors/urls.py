@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from authors.apps.core.documentation import schema_view
+from .apps.articles import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,5 +32,7 @@ urlpatterns = [
                                      namespace='profiles')),
     path('api/v1/notifications/', include('authors.apps.notifications.urls',
                                           namespace='notifications')),
+    path('api/v1/bookmarks', views.BookmarkAPIView.as_view(),
+         name='bookmarks'),
     path('', schema_view.with_ui('swagger'), name='schema-swagger-ui')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

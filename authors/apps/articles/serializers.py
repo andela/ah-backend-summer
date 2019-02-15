@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from . import models
 from ..profiles import serializers as ProfileSerializers
-from .utils.utils import get_article_read_time
+from .utils.utils import get_article_read_time, get_articles_url
 
 
 class ArticleSerializer (serializers.ModelSerializer):
@@ -83,3 +83,32 @@ class ArticleRatingSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         return obj.article.author.user.username
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    slug = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
+    article_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Bookmark
+        fields = (
+            "slug", "title", "description", "author", "article_url"
+        )
+
+    def get_slug(self, obj):
+        return obj.article.slug
+
+    def get_description(self, obj):
+        return obj.article.description
+
+    def get_title(self, obj):
+        return obj.article.title
+
+    def get_author(self, obj):
+        return obj.article.author.user.username
+
+    def get_article_url(self, obj):
+        return get_articles_url(obj, self.context['request'])

@@ -4,6 +4,7 @@ import readtime
 
 from django.utils.text import slugify
 from django.db.models import Avg
+from django.urls import reverse
 
 
 def unique_random_string(size=7):
@@ -46,3 +47,11 @@ def get_article_read_time(body):
         return str(result)
     else:
         return "0 min read"
+
+
+def get_articles_url(obj, request):
+    url = request.build_absolute_uri(reverse('articles:article-details',
+                                             kwargs={
+                                                 'slug': obj.article.slug
+                                             }))
+    return url
