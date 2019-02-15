@@ -163,7 +163,7 @@ class TestFollowProfile(APITestCase):
             HTTP_AUTHORIZATION=f'Bearer {self.token1}',)
         self.assertEqual(response.data['message'],
                          'You are not following anyone.')
-        self.assertEqual(response.data['status'], 400)
+        self.assertEqual(response.data['status'], 204)
 
     def test_user_can_view_all_users_who_follow_them(self):
         """ Test that a user can view all users that follow them.
@@ -189,4 +189,4 @@ class TestFollowProfile(APITestCase):
             HTTP_AUTHORIZATION=f'Bearer {self.token2}',)
         self.assertEqual(response.data['message'],
                          'You have no followers.')
-        self.assertEqual(response.data['status'], 400)
+        self.assertEqual(response.data['status'], 204)
