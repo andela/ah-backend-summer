@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from . import models
 from ..profiles import serializers as ProfileSerializers
-from .utils.utils import get_article_read_time, get_articles_url
+from .utils.utils import (get_article_read_time, get_articles_url,
+                          get_sharing_links)
 
 
 class ArticleSerializer (serializers.ModelSerializer):
@@ -16,6 +17,7 @@ class ArticleSerializer (serializers.ModelSerializer):
     favorited = serializers.SerializerMethodField()
     average_ratings = serializers.IntegerField(required=False)
     read_time = serializers.SerializerMethodField()
+    share_links = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Article
@@ -36,6 +38,7 @@ class ArticleSerializer (serializers.ModelSerializer):
             "average_ratings",
             "tag_list",
             "read_time",
+            "share_links",
         )
         read_only_fields = (
             'author',
@@ -63,6 +66,9 @@ class ArticleSerializer (serializers.ModelSerializer):
 
     def get_read_time(self, obj):
         return get_article_read_time(obj.body)
+
+    def get_share_links(self, obj):
+        return get_sharing_links(obj, self.context['request'])
 
 
 class ArticleRatingSerializer(serializers.ModelSerializer):
