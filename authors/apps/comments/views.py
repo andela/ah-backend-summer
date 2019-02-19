@@ -35,7 +35,9 @@ class CommentApiView (GenericAPIView):
         """Retrieve all comments on an article"""
         self.get_required_objects(request, slug)
         comments = Comment.objects.filter(article=self.article)
-        serialized_data = self.serializer_class(comments, many=True)
+        serialized_data = self.serializer_class(comments, many=True,
+                                                context={
+                                                    'request': request})
         return Response({
             "comments": serialized_data.data,
             "commentCount": comments.count(),
@@ -92,7 +94,9 @@ class CommentDetailApiView (GenericAPIView):
                             "status_message": "Failed: Access denied"},
                             status=status.HTTP_403_FORBIDDEN)
         serializer = self.serializer_class(
-            self.comment, self.data, partial=True)
+            self.comment, self.data, partial=True,
+            context={
+                'request': request})
         serializer.is_valid(raise_exception=True)
         if self.comment.body != self.data['body']:
             serializer.save()
@@ -135,7 +139,9 @@ class CommentReplyApiView (GenericAPIView):
         """Retrieve all replies on an comment"""
         self.get_required_objects(request, comment_pk)
         replies = CommentReply.objects.filter(comment=self.comment)
-        serialized_data = self.serializer_class(replies, many=True)
+        serialized_data = self.serializer_class(replies, many=True,
+                                                context={
+                                                    'request': request})
         return Response({
             "replies": serialized_data.data,
             "repliesCount": replies.count(),
@@ -194,7 +200,9 @@ class CommentReplyDetailApiView (GenericAPIView):
                 "response": "You can only edit a reply you authored",
                             "message": "Failed: Access denied"},
                             status=status.HTTP_403_FORBIDDEN)
-        serializer = self.serializer_class(self.reply, self.data, partial=True)
+        serializer = self.serializer_class(self.reply, self.data, partial=True,
+                                           context={
+                                               'request': request})
         serializer.is_valid(raise_exception=True)
         if self.reply.body != self.data['body']:
             serializer.save()

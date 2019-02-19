@@ -1,11 +1,12 @@
 from django.urls import path
 from .views import (
-     ProfileRetrieveUpdateView,
-     ProfileFollowAPIView,
-     ProfileFollowersAPIView,
-     ProfileFollowingAPIView,
-     UserProfileListAPIView
-     )
+    ProfileRetrieveUpdateView,
+    ProfileFollowAPIView,
+    ProfileFollowersAPIView,
+    ProfileFollowingAPIView,
+    UserProfileListAPIView,
+    ReadStatsView
+)
 
 app_name = "profiles"
 
@@ -18,5 +19,8 @@ urlpatterns = [
          name="following"),
     path("follow/followers", ProfileFollowersAPIView.as_view(),
          name="followers"),
-    path("", UserProfileListAPIView.as_view(), name="profile-list"),
+    path("", UserProfileListAPIView.as_view(),
+         name="profile-list"),
+    path('user/readstats', ReadStatsView.as_view(),
+         name='read-stats'),
 ]

@@ -43,5 +43,7 @@ login_invalid_password = {
 login_no_email_password = {
     'user': {}
 }
-valid_token_unexisting_user = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZXhwIjozMDMyMDE1NjUxNH0.z2yxT0WvOuE2AXvYIc6LwxoVadV8izp7zFIVf0jsmhY"
-expired_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZXhwIjoxNTQ4OTU2MzY5fQ.Eu-0EFROqMrPcWEkcgRJYG0zzK_-IuhODAe8v69rd5o'
+valid_token_unexisting_user = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6\
+MSwiZXhwIjozMDMyMDE1NjUxNH0.z2yxT0WvOuE2AXvYIc6LwxoVadV8izp7zFIVf0jsmhY"
+expired_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZXhwIjoxNTQ\
+4OTU2MzY5fQ.Eu-0EFROqMrPcWEkcgRJYG0zzK_-IuhODAe8v69rd5o'

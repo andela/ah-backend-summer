@@ -1,11 +1,16 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from authors.apps.authentication.models import User
 from authors.apps.profiles.exceptions import ProfileDoesNotExist
 from .serializers import ProfileSerializer
 from .models import Profile
 from .permissions import IsObjectOwner
+from .renderers import ReadStatsJsonRenderer
+from authors.apps.articles.models import ReadStats
+from authors.apps.articles.serializers import ReadStatsSerializer
 
 
 class ProfileRetrieveUpdateView(generics.GenericAPIView):
@@ -28,12 +33,12 @@ class ProfileRetrieveUpdateView(generics.GenericAPIView):
             response_data = {
                 "profile": serializer.data,
                 "message": "successfully returned profile details"
-                }
+            }
             return Response(response_data, status=status.HTTP_200_OK)
         return Response({
             "error": "Profile with this username does not exist",
             "status": status.HTTP_404_NOT_FOUND
-            }, status=status.HTTP_404_NOT_FOUND)
+        }, status=status.HTTP_404_NOT_FOUND)
 
     def update(self, request, username):
         data = request.data
@@ -44,7 +49,9 @@ class ProfileRetrieveUpdateView(generics.GenericAPIView):
             self.check_object_permissions(request, profile)
             serializer = self.serializer_class(profile,
                                                data=profile_data,
-                                               partial=True)
+                                               partial=True,
+                                               context={
+                                                   'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             message = "Your profile has been updated successfully."
@@ -57,7 +64,7 @@ class ProfileRetrieveUpdateView(generics.GenericAPIView):
         return Response({
             "errors": error_message,
             "status": status.HTTP_404_NOT_FOUND
-            }, status=status.HTTP_404_NOT_FOUND)
+        }, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, username):
         return self.update(request, username)
@@ -83,7 +90,7 @@ class ProfileFollowAPIView(generics.GenericAPIView):
             return Response({
                 "error": "You cannot follow yourself",
                 "status": status.HTTP_422_UNPROCESSABLE_ENTITY
-                }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         if followee not in follower.follows.all():
             follower.follow(followee)
             message = f'You have followed {followee}'
@@ -112,7 +119,7 @@ class ProfileFollowAPIView(generics.GenericAPIView):
             return Response({
                 "error": "You cannot unfollow yourself",
                 "status": status.HTTP_422_UNPROCESSABLE_ENTITY
-                }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         if followee in follower.follows.all():
             follower.unfollow(followee)
             message = f'You have unfollowed {followee}'
@@ -127,7 +134,7 @@ class ProfileFollowAPIView(generics.GenericAPIView):
         return Response({
             "error": error_msg,
             "status": status.HTTP_422_UNPROCESSABLE_ENTITY
-            }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class ProfileFollowingAPIView(generics.GenericAPIView):
@@ -189,9 +196,42 @@ class UserProfileListAPIView(generics.ListAPIView):
 
     def get(self, request):
         profiles = Profile.objects.all()
-        serializer = self.serializer_class(profiles, many=True)
+        serializer = self.serializer_class(profiles, many=True,
+                                           context={
+                                               'request': request})
         response_data = {
             "profiles": serializer.data,
             "message": "Successfully returned all users profiles"
-            }
+        }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ReadStatsView(generics.ListAPIView):
+    """
+    Method returns a list of articles read by a user
+    """
+    serializer_class = ReadStatsSerializer
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ReadStatsJsonRenderer, )
+
+    def get_queryset(self, username):
+
+        user = get_object_or_404(User, username=username)
+        stats = ReadStats.objects.all().filter(user=user)
+        return [item.article for item in stats]
+
+    def get(self, request):
+
+        username = request.user.username
+        articles = self.get_queryset(username)
+        recent_articles = [{
+            'title': article.title,
+            'slug': article.slug,
+            'author': article.author.user.username}
+            for article in articles[:5]]
+        data = {
+            'user': request.user.username,
+            'total_articles_read': len(articles),
+            'recent_articles_read': recent_articles
+        }
+        return Response(data)

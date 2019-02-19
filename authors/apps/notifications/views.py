@@ -33,7 +33,9 @@ class NotificationSettingsAPIView(GenericAPIView):
         """
         notification_settings = self.get_notification_settings_object(
             request.user)
-        serializer = self.serializer_class(notification_settings)
+        serializer = self.serializer_class(notification_settings,
+                                           context={
+                                               'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request):
@@ -44,7 +46,9 @@ class NotificationSettingsAPIView(GenericAPIView):
         serializer = self.serializer_class(
             self.get_notification_settings_object(request.user),
             data=request.data,
-            partial=True)
+            partial=True,
+            context={
+                'request': request})
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -66,7 +70,9 @@ class NotificationAPIView(GenericAPIView):
         """
         notifications = Notification.get_unread_in_app_notifications(
             request.user.profile)
-        serializer = self.serializer_class(notifications, many=True)
+        serializer = self.serializer_class(notifications, many=True,
+                                           context={
+                                               'request': request})
         return Response({'notifications': serializer.data},
                         status=status.HTTP_200_OK)
 

@@ -18,6 +18,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         request = self.context.get('request', None)
         if request is None:
             return False
+        if request.user.is_anonymous:
+            return False
         follower = request.user.profile
         followee = instance
         return follower.is_following(followee)

@@ -114,6 +114,16 @@ class Article(models.Model):
                                       kwargs={'slug': self.slug})
 
 
+class ReadStats(models.Model):
+    """
+    Class to hold data from the stats of the article
+    """
+    article = models.ForeignKey(Article, on_delete=models.CASCADE,
+                                blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    read_date = models.DateTimeField(auto_now_add=True)
+
+
 def article_pre_save_receiver(sender, instance, *args, **kwargs):
     """
     article_pre_save_reciever generates a unique slug for an article
