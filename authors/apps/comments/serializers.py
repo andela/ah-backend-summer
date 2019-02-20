@@ -25,6 +25,8 @@ class CommentSerializer(custom_serializers.ModelSerializer):
             "article",
             "id",
             'commenting_on',
+            "like_count",
+            "dislike_count"
         )
         read_only_fields = (
             "article",

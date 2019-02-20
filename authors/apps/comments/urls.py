@@ -6,7 +6,9 @@ from .views import (
     CommentReplyApiView,
     CommentReplyDetailApiView,
     CommentEditHistoryAPIView,
-    CommentReplyEditHistoryAPIView
+    CommentReplyEditHistoryAPIView,
+    LikeCommentApiView,
+    DislikeCommentApiView
 )
 
 app_name = "comments"
@@ -31,4 +33,8 @@ urlpatterns = [
     path('comments/<int:pk>',
          CommentDetailApiView.as_view(), name='comment-details'),
     path('<str:slug>/comments', CommentApiView.as_view(), name='comments'),
+    path('<int:pk>/like', LikeCommentApiView.as_view(),
+         name='comment-likes'),
+    path('<int:pk>/dislike', DislikeCommentApiView.as_view(),
+         name='comment-dislikes')
 ]
