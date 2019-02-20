@@ -9,20 +9,11 @@ from .views import (
     CommentReplyEditHistoryAPIView
 )
 
-
 app_name = "comments"
 
 urlpatterns = [
-    path('<slug>', CommentApiView.as_view(), name='comments'),
-    path('comment-details/<int:pk>',
-         CommentDetailApiView.as_view(), name='comment-details'),
-    path('comment-reply/<int:comment_pk>',
+    path('comments/<int:comment_pk>/replies',
          CommentReplyApiView.as_view(), name='comment-reply'),
-    path(
-        'comment-reply-details/<int:pk>',
-        CommentReplyDetailApiView.as_view(),
-        name='comment-reply-details'
-    ),
     path(
         '<str:slug>/comment/<int:pk>/history',
         CommentEditHistoryAPIView.as_view(),
@@ -33,4 +24,11 @@ urlpatterns = [
         CommentReplyEditHistoryAPIView.as_view(),
         name='comment-reply-edit-history'
     ),
+    path('comments/replies/<int:pk>',
+         CommentReplyDetailApiView.as_view(),
+         name='comment-reply-details'
+         ),
+    path('comments/<int:pk>',
+         CommentDetailApiView.as_view(), name='comment-details'),
+    path('<str:slug>/comments', CommentApiView.as_view(), name='comments'),
 ]

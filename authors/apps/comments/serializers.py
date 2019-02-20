@@ -1,17 +1,19 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
+from authors.apps.core import serializers as custom_serializers
 from .models import Comment, CommentReply
-from ..profiles import serializers as ProfileSerializers
+from ..profiles import serializers as profile_serializers
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentSerializer(custom_serializers.ModelSerializer):
     """
     This serializer class specifies fields to render to the user
     for reteriving, updating or creating of a comment on an article.
     It specifies the author, article, created_at and updated_at fields
     as read-only since these fields data is auto generated
     """
-    author = ProfileSerializers.ProfileSerializer(read_only=True)
+    author = profile_serializers.ProfileSerializer(read_only=True)
 
     class Meta:
         model = Comment
@@ -21,7 +23,8 @@ class CommentSerializer(serializers.ModelSerializer):
             "body",
             "author",
             "article",
-            "id"
+            "id",
+            'commenting_on',
         )
         read_only_fields = (
             "article",
@@ -30,6 +33,25 @@ class CommentSerializer(serializers.ModelSerializer):
             'updated_at'
             "id"
         )
+        extra_kwargs = {
+            'commenting_on': {
+                'required': False
+            }
+        }
+
+    def validate_commenting_on(self, data):
+        if not data:
+            raise ValidationError(
+                "This field cannot be blank. "
+                "If you are not commenting on "
+                "a specific part of the article, "
+                "exclude this field")
+        if data not in self.context['article'].body:
+            raise ValidationError(
+                "You cannot comment on text not in the article"
+            )
+
+        return data
 
 
 class CommentReplySerializer(serializers.ModelSerializer):
@@ -39,7 +61,7 @@ class CommentReplySerializer(serializers.ModelSerializer):
     the author, comment,created_at and updated_at fields as read-only
     since these fields data is auto generated
     """
-    author = ProfileSerializers.ProfileSerializer(read_only=True)
+    author = profile_serializers.ProfileSerializer(read_only=True)
 
     class Meta:
         model = CommentReply

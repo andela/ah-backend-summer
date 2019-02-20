@@ -138,7 +138,8 @@ The preferred JSON object to be returned by the API should be structured as foll
       "bio": "I work at statefarm",
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
-    }
+    },
+    "commenting_on": "lorem ipsum"
   }
 }
 ```
@@ -157,7 +158,8 @@ The preferred JSON object to be returned by the API should be structured as foll
       "bio": "I work at statefarm",
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
-    }
+    },
+    "commenting_on": "lorem ipsum"
   }],
   "comments_count": 1
 }
@@ -428,7 +430,8 @@ Example request body:
 ```source-json
 {
   "comment": {
-    "body": "His name was my name too."
+    "body": "His name was my name too.",
+    "commenting_on": "lorem ipsum"
   }
 }
 ```
