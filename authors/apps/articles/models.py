@@ -158,3 +158,17 @@ class Bookmark(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE,
                                 related_name='is_bookmarked')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class Report(models.Model):
+    reporter = models.ForeignKey(ProfileModel.Profile,
+                                 on_delete=models.CASCADE,
+                                 blank=True)
+    article = models.ForeignKey(Article,
+                                on_delete=models.CASCADE,
+                                blank=True)
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.article.title

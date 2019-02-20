@@ -1,5 +1,5 @@
 from rest_framework import status
-from ..models import Article, Bookmark
+from ..models import Article, Bookmark, Report
 
 
 def get_single_article_using_slug(slug):
@@ -82,3 +82,14 @@ def get_single_bookmark_or_create_bookmark(article, user):
     except Bookmark.DoesNotExist:
         Bookmark.objects.create(article=article, user=user)
         return None
+
+
+def get_single_report(id):
+    """
+    get_single_report returns report based on the id otherwise returns None
+    """
+    try:
+        report = Report.objects.get(id=id)
+    except Report.DoesNotExist:
+        report = None
+    return report

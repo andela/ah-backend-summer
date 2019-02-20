@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics, permissions, filters
@@ -13,9 +15,10 @@ from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer
 from .utils.model_helpers import *
 from ..profiles import models as profile_model
 
-from .models import Rating, Article, Bookmark, ReadStats
+from .models import Rating, Article, Bookmark, ReadStats, Report
 from .paginators import ArticleLimitOffsetPagination
 from .utils.custom_filters import ArticleFilter
+from authors.apps.notifications.tasks import send_email
 
 
 class ArticlesApiView (generics.ListCreateAPIView):
@@ -360,3 +363,100 @@ class ArticleBookmarkAPIView(generics.GenericAPIView):
             return Response({
                 'error': error,
                 'status': status.HTTP_404_NOT_FOUND})
+
+
+class ReportArticleAPIView(generics.GenericAPIView):
+    """
+    ReportArticleAPIView handles reporting of an article
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.ArticleReporterSerializer
+
+    def email_admin(self, article, request, reporter):
+        """
+        email_admin sends an email to the admin of the site when a report on
+        an article has been made
+        """
+        article_url = reverse('articles:article-details',
+                              kwargs={'slug': article.slug})
+        article_url = request.build_absolute_uri(article_url)
+        body = f"""Article {article_url} has been reported by
+        {reporter.username} for the reason {request.data["reason"]}"""
+        send_email.delay('Report Article', body, [settings.DEFAULT_FROM_EMAIL])
+
+    def check_if_user_can_report(self, article, reporter):
+        """
+        check_if_user_can_report check's to see if a user is allowed to report
+        an article
+        """
+        msg, status_code = None, None
+        if not article:
+            msg = "The article you're trying to report does not exist"
+            status_code = status.HTTP_404_NOT_FOUND
+        elif article.author == reporter:
+            msg = "You cannot report your own article"
+            status_code = status.HTTP_403_FORBIDDEN
+        elif Report.objects.filter(reporter=reporter, article=article):
+            msg = "You already reported this article"
+            status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        return msg, status_code
+
+    def post(self, request, slug):
+        article = get_single_article_using_slug(slug)
+        reporter = request.user.profile
+        msg, status_code = self.check_if_user_can_report(article, reporter)
+        if msg:
+            return Response({"message": msg}, status=status_code)
+        context = {"request": request}
+        serializer = self.serializer_class(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(reporter=reporter, article=article)
+        self.email_admin(article, request, reporter)
+        msg = f"You have reported this article {article.title}"
+        response_data = {"message": msg, "report": serializer.data}
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ReportsAPIView(generics.GenericAPIView):
+    """
+    ReportsAPIView retrieve's all the reports made if the user is an admin
+    otherwise it retrieve's only the reports made by a particular logged in
+    user
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.ArticleReporterSerializer
+
+    def get(self, request):
+        if request.user.is_superuser:
+            reports = models.Report.objects.all()
+        user = request.user.profile
+        reports = user.report_set.all()
+        context = {"request": request}
+        serializer = self.serializer_class(reports, many=True, context=context)
+        response_data = {"reports": serializer.data}
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ReportAPIView(generics.GenericAPIView):
+    """
+    ReportAPIView retrieve's a single report. Only if a user created a report
+    should they be able to retrieve the report or if they are an admin.
+    """
+    permission_classes = (permissions.IsAuthenticated,
+                          custom_permissions.IsNotReportOwner,)
+    serializer_class = serializers.ArticleReporterSerializer
+
+    def get(self, request, id):
+        reporter = request.user.profile
+        report = get_single_report(id)
+        if report:
+            report = Report.objects.get(id=id)
+            self.check_object_permissions(request, report)
+            context = {"request": request}
+            serializer = self.serializer_class(report, context=context)
+            response_data = {"report": serializer.data}
+            status_code = status.HTTP_200_OK
+        else:
+            response_data = {"message": "Report does not exist"}
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(response_data, status=status_code)
