@@ -5,6 +5,7 @@ import readtime
 from django.utils.text import slugify
 from django.db.models import Avg
 from django.urls import reverse
+from urllib.parse import quote
 
 
 def unique_random_string(size=7):
@@ -55,3 +56,34 @@ def get_articles_url(obj, request):
                                                  'slug': obj.article.slug
                                              }))
     return url
+
+
+def get_sharing_links(obj, request):
+    """
+    This method creates links that will be used to post an article to
+    Facebook and Google Plus, or share an article as a tweet on Twitter
+    and also share the article through email to another email user
+
+    Parameters: Request of the body and the article object
+    Returns: share links for platforms of social media and email
+
+    """
+    share_links = dict()
+    url = request.build_absolute_uri(reverse('articles:article-details',
+                                             kwargs={'slug': obj.slug}))
+    title = quote(obj.title)
+    author = quote(obj.author.username)
+    space = quote(' ')
+    append_to_url = f'{title}{space}by{space}{author}{space}{url}'
+
+    share_links['google_plus'] = f"https://plus.google.com/share?url\
+={url}"
+    share_links['twitter'] = f"https://twitter.com/home?status={append_to_url}"
+    share_links['facebook'] = f"https://www.facebook.com/sharer/sharer.php?u\
+={url}"
+
+    message = quote('I am sharing this article, ')
+    body = (f"""{message}'{title}'%20{url}""")
+    share_links['email'] = f'mailto:?&subject={title}&body={body}'
+
+    return share_links

@@ -5,6 +5,7 @@ from rest_framework import status
 from authors.apps.articles.tests import base_class
 from .test_data import test_article_data
 from ..models import Article
+from urllib.parse import quote
 
 
 class TestArticleView(base_class.BaseTest):
@@ -291,3 +292,39 @@ class TestArticleLikeDislikeArticleViews(base_class.BaseTest):
         response = self.client.get(self.article_url(self.article.slug))
         # we haven't disliked any article yet
         self.assertEqual(response.data['dislike_count'], 0)
+
+    def test_get_facebook_share_link(self):
+        """User can share an article in a facebook post"""
+        response = self.client.get(self.article_url(self.article.slug))
+        url = f'http://testserver/api/v1/articles/{self.article.slug}'
+        self.assertEqual(response.data['share_links']['facebook'],
+                         'https://www.facebook.com/sharer/\
+sharer.php?u='+url)
+
+    def test_get_twitter_share_link(self):
+        """User can share an article in a twitter tweet"""
+        response = self.client.get(self.article_url(self.article.slug))
+        title = quote(self.article.title)
+        author = quote(self.article.author.username)
+        space = quote(' ')
+        url = f'http://testserver/api/v1/articles/{self.article.slug}'
+        append_to_url = f'{title}{space}by{space}{author}{space}{url}'
+        self.assertEqual(response.data['share_links']['twitter'],
+                         'https://twitter.com/home?status='+append_to_url)
+
+    def test_get_google_plus_share_link(self):
+        """User can share an article in a google plus post"""
+        response = self.client.get(self.article_url(self.article.slug))
+        url = f'http://testserver/api/v1/articles/{self.article.slug}'
+        self.assertEqual(response.data['share_links']['google_plus'],
+                         'https://plus.google.com/share?url='+url)
+
+    def test_get_email_share_link(self):
+        """User can share an article via email"""
+        response = self.client.get(self.article_url(self.article.slug))
+        subject = self.article.title
+        message = quote('I am sharing this article, ')
+        body = (f"""{message}'{subject}'%20\
+http://testserver/api/v1/articles/{self.article.slug}""")
+        self.assertEqual(response.data['share_links']['email'],
+                         f'mailto:?&subject={subject}&body={body}')
