@@ -8,11 +8,11 @@ from . import (
     models,
     permissions as custom_permissions
 )
-from .renderers import ArticleJSONRenderer
+from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer
 from .utils.model_helpers import *
 from ..profiles import models as profile_model
 
-from .models import Rating, Article
+from .models import Rating, Article, Bookmark
 from .paginators import ArticleLimitOffsetPagination
 from .utils.custom_filters import ArticleFilter
 
@@ -275,3 +275,80 @@ class ArticleTagsApiView(generics.GenericAPIView):
         return Response(
             {'tags': msg},
             status=status.HTTP_404_NOT_FOUND)
+
+
+class BookmarkAPIView(generics.ListAPIView):
+    """
+    Class returns all articles in bookmarks of the user logged in
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.BookmarkSerializer
+    renderer_classes = (BookmarkJSONRenderer,)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the bookmarks
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        return Bookmark.objects.filter(user=user)
+
+
+class ArticleBookmarkAPIView(generics.GenericAPIView):
+    """Class adds or deletes an article from users bookmarks"""
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.BookmarkSerializer
+
+    def post(self, request, slug):
+        """
+        Add article to bookmarks of the user
+        Checks to see article being added exists
+        Checks to see if article has already been added to boomarks
+        """
+        article = get_single_article_using_slug(slug)
+        if not article:
+            error = f'An article with this slug,{slug}, does not exist'
+            return Response({
+                'error': error,
+                'status': status.HTTP_404_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND)
+        user = request.user
+        bookmark = get_single_bookmark_or_create_bookmark(article, user)
+
+        if bookmark:
+            return Response({
+                'message': f'Article already exists in bookmarks',
+                'status': status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            message = f'Article has been added to bookmarks'
+            return Response({
+                'message': message,
+                'status': status.HTTP_201_CREATED},
+                status=status.HTTP_201_CREATED)
+
+    def delete(self, request, slug):
+        """
+        Delete article from bookmarks of the user
+        Checks to see article being deleted exists
+        Checks to see if article has already been deleted from boomarks
+        """
+        article = get_single_article_using_slug(slug)
+        if not article:
+            return Response({
+                'error': f'An article with this slug,{slug}, does not exist',
+                'status': status.HTTP_404_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND)
+        user = request.user
+        bookmark = get_single_bookmark_user(article, user)
+        if bookmark:
+            bookmark.delete()
+            message = f'Article has been deleted from your bookmarks'
+            return Response({
+                'message': message,
+                'status': status.HTTP_200_OK})
+        else:
+            error = f'This article does not exist in your bookmarks'
+            return Response({
+                'error': error,
+                'status': status.HTTP_404_NOT_FOUND})
