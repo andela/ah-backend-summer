@@ -4,6 +4,7 @@ from . import models
 from ..profiles import serializers as ProfileSerializers
 from .utils.utils import (get_article_read_time, get_articles_url,
                           get_sharing_links)
+from authors.apps.authentication.models import User
 
 
 class ArticleSerializer (serializers.ModelSerializer):
@@ -18,6 +19,7 @@ class ArticleSerializer (serializers.ModelSerializer):
     average_ratings = serializers.IntegerField(required=False)
     read_time = serializers.SerializerMethodField()
     share_links = serializers.SerializerMethodField()
+    read_stats = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Article
@@ -39,6 +41,7 @@ class ArticleSerializer (serializers.ModelSerializer):
             "tag_list",
             "read_time",
             "share_links",
+            'read_stats',
         )
         read_only_fields = (
             'author',
@@ -47,6 +50,7 @@ class ArticleSerializer (serializers.ModelSerializer):
             'updated_at'
             'like_count',
             'dislike_count',
+            'read_stats',
         )
 
     def get_favorited(self, obj):
@@ -69,6 +73,12 @@ class ArticleSerializer (serializers.ModelSerializer):
 
     def get_share_links(self, obj):
         return get_sharing_links(obj, self.context['request'])
+
+    def get_read_stats(self, obj):
+        request = self.context.get('request', None)
+        if request.user.username != obj.author.username:
+            return None
+        return models.ReadStats.objects.filter(article=obj).count()
 
 
 class ArticleRatingSerializer(serializers.ModelSerializer):
@@ -118,3 +128,15 @@ class BookmarkSerializer(serializers.ModelSerializer):
 
     def get_article_url(self, obj):
         return get_articles_url(obj, self.context['request'])
+
+
+class ReadStatsSerializer(serializers.ModelSerializer):
+    """
+    Serializer to handle data from the ReadStats models
+    """
+    class Meta:
+        model = models.ReadStats
+        fields = ('user',
+                  'article',
+                  'read_date',)
+        read_only_fields = ("user", "article")

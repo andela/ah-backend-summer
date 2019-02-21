@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
 
 from . import (
     serializers,
@@ -12,7 +13,7 @@ from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer
 from .utils.model_helpers import *
 from ..profiles import models as profile_model
 
-from .models import Rating, Article, Bookmark
+from .models import Rating, Article, Bookmark, ReadStats
 from .paginators import ArticleLimitOffsetPagination
 from .utils.custom_filters import ArticleFilter
 
@@ -61,13 +62,20 @@ class ArticleDetailApiView (generics.GenericAPIView):
     def get(self, request, slug):
         article = self.get_object(slug)
         context = {"request": request}
-        if article:
-            serialized_data = self.serializer_class(article,
-                                                    context=context)
-            return Response(serialized_data.data, status=status.HTTP_200_OK)
-        return Response({
-            'errors': 'sorry article with that slug doesnot exist'
-        }, status=status.HTTP_404_NOT_FOUND)
+        if not article:
+            return Response({
+                'errors': 'sorry article with that slug doesnot exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        serialized_data = self.serializer_class(article,
+                                                context=context)
+        # We try to add the user to the readstats of an article after they read
+        # the article, but only if they are logged in and are not the authors
+        # of the article.
+        if not request.user.is_anonymous and\
+                article.author.pk != request.user.pk:
+            ReadStats.objects.get_or_create(
+                user=request.user, article=article)
+        return Response(serialized_data.data, status=status.HTTP_200_OK)
 
     def patch(self, request, slug):
         data = request.data

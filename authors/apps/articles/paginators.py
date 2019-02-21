@@ -7,4 +7,4 @@ class ArticleLimitOffsetPagination(LimitOffsetPagination):
     """
 
     default_limit = 10
-    offset_query_param = "page"
+    offset_query_param = "offset"
