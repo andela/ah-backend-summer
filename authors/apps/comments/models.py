@@ -1,6 +1,9 @@
 from django.conf import settings
+
 from django.db import models
 from rest_framework.reverse import reverse
+
+from simple_history.models import HistoricalRecords
 
 from ..profiles.models import Profile
 from ..articles.models import Article
@@ -14,6 +17,7 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    edit_history = HistoricalRecords()
 
     class Meta:
         """
@@ -41,6 +45,7 @@ class CommentReply(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    edit_history = HistoricalRecords()
 
     class Meta:
         """

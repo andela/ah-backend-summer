@@ -4,14 +4,13 @@ from rest_framework import status
 
 from ...authentication.tests import base_class
 from ...authentication.models import User
-from ..models import Comment
+from ..models import Comment, CommentReply
 from ...profiles.models import Profile
 from ...articles.models import Article
 import json
 
 
 class TestCommenting(base_class.BaseTest):
-    pass
 
     def setUp(self):
         super().setUp()
@@ -240,3 +239,118 @@ class TestCommenting(base_class.BaseTest):
             "You can only delete a reply you authored",
             response.data['response'])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_edit_history_if_slug_is_invalid(self):
+        self.create_comment()
+        comment = Comment.objects.all().first()
+        self.authenticate_test_user2()
+        response = self.client.get(
+            reverse("comments:comment-edit-history",
+                    kwargs={
+                        "slug": "wrong_slug",
+                        "pk": comment.id}),
+            content_type='application/json'
+        )
+        expected_dict = {
+            "error": "Article with slug 'wrong_slug' doesnot exist",
+            "status": 404
+        }
+        self.assertDictEqual(expected_dict, response.data)
+        self.assertEqual(response.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_get_edit_history_if_comment_id_that_doesnt_exist(self):
+        user = self.create_another_user_in_db()
+        self.create_article(user)
+        article = Article.objects.all().first()
+        self.authenticate_test_user2()
+        response = self.client.get(
+            reverse("comments:comment-edit-history",
+                    kwargs={
+                        "slug": article.slug,
+                        "pk": 5}),
+            content_type='application/json'
+        )
+        expected_dict = {
+            "error": "Comment with id '5' doesnot exist",
+            "status": 404
+        }
+        self.assertDictEqual(expected_dict, response.data)
+        self.assertEqual(response.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_get_edit_history_for_comment_with_valid_slug_article_and_id(self):
+        self.create_comment()
+        comment = Comment.objects.all().first()
+        article = Article.objects.all().first()
+        response = self.client.get(
+            reverse("comments:comment-edit-history",
+                    kwargs={"slug": article.slug,
+                            "pk": comment.id}),
+            content_type='application/json'
+        )
+        self.assertIn('history_change_type', response.data['history'][0])
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+
+    def test_get_edit_history_for_comment_reply_with_invalid_comment_id(self):
+        """
+        this method tests whether an error response of an invalid comment id is
+        returned if user gets reply edit history for using a comment id that
+        doesnot exist
+        """
+        self.create_comment()
+        self.create_reply()
+        comment_reply = CommentReply.objects.all().first()
+        response = self.client.get(
+            reverse("comments:comment-reply-edit-history",
+                    kwargs={
+                        "comment_pk": 5,
+                        "pk": comment_reply.id}),
+            content_type='application/json'
+        )
+        expected_dict = {
+            "error": "Comment with id '5' doesnot exist",
+            "status": 404}
+        self.assertDictEqual(expected_dict, response.data)
+        self.assertEqual(response.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_get_edit_history_for_comment_reply_id_that_doesnt_exist(self):
+        """
+        this method tests whether an error response of an invalid comment id is
+        returned if user gets reply edit history using a comment reply id that
+        doesnot exist
+        """
+        self.create_comment()
+        comment = Comment.objects.all().first()
+        response = self.client.get(
+            reverse("comments:comment-reply-edit-history",
+                    kwargs={"comment_pk": comment.id,
+                            "pk": 5}),
+            content_type='application/json'
+        )
+        expected_dict = {
+            "error": "Comment reply with id '5' doesnot exist",
+            "status": 404}
+        self.assertDictEqual(expected_dict, response.data)
+        self.assertEqual(response.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_get_edit_history_for_comment_reply_with_valid_id(self):
+        """this method tests for status code and response returned if user
+        suppliesa valid comment and comment reply id
+        """
+        self.create_comment()
+        self.create_reply()
+        comment_reply = CommentReply.objects.all().first()
+        comment = Comment.objects.all().first()
+        response = self.client.get(
+            reverse("comments:comment-reply-edit-history",
+                    kwargs={"comment_pk": comment.id,
+                            "pk": comment_reply.id}),
+            content_type='application/json'
+        )
+        self.assertIn('history_change_type', response.data['history'][0])
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
