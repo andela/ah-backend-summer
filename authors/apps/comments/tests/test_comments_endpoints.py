@@ -509,9 +509,9 @@ class TestCommenting(base_class.BaseTest):
             content_type='application/json'
         )
         self.assertIn(
-            "like and dislike",
+            "changed",
             response.data['message'])
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_can_reverse_like_comment_you_liked(self):
         self.create_comment()
@@ -634,9 +634,9 @@ class TestCommenting(base_class.BaseTest):
             content_type='application/json'
         )
         self.assertIn(
-            "like and dislike",
+            "changed",
             response.data['message'])
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_can_reverse_dislike_comment_you_disliked(self):
         self.create_comment()
