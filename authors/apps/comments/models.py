@@ -13,6 +13,7 @@ class Comment(models.Model):
     """The model defines the Comments table as stored in the DB
     """
     body = models.TextField()
+    commenting_on = models.TextField(blank=False, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)

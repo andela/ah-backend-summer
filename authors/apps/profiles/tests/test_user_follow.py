@@ -68,7 +68,7 @@ class TestFollowProfile(APITestCase):
             format='json',
             HTTP_AUTHORIZATION=f'Bearer {self.token1}',)
         self.assertEqual(response.data['errors']['error'],
-                         'The Requested profile doesnot exist.')
+                         'The Requested profile does not exist.')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_follow_a_user_after_following_them(self):
@@ -114,7 +114,7 @@ class TestFollowProfile(APITestCase):
             format='json',
             HTTP_AUTHORIZATION=f'Bearer {self.token1}',)
         self.assertEqual(response.data['errors']['error'],
-                         'The Requested profile doesnot exist.')
+                         'The Requested profile does not exist.')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_cannot_unfollow_themself(self):

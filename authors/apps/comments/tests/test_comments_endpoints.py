@@ -1,13 +1,16 @@
-from django.urls import reverse
+import json
 
+from django.urls import reverse
 from rest_framework import status
 
+from authors.apps.comments.tests.test_data import article, \
+    comment_with_empty_comment_on_text, \
+    comment_with_text_not_in_article, comment_with_right_commenting_on_text
 from ...authentication.tests import base_class
 from ...authentication.models import User
 from ..models import Comment, CommentReply
 from ...profiles.models import Profile
 from ...articles.models import Article
-import json
 
 
 class TestCommenting(base_class.BaseTest):
@@ -16,9 +19,9 @@ class TestCommenting(base_class.BaseTest):
         super().setUp()
         user = self.activated_user()
         Article.objects.create(
-            title='whale',
-            description='fish',
-            body='In water',
+            title=article['title'],
+            description=article['description'],
+            body=article['body'],
             author=Profile.objects.get(user=user.id))
         self.article = Article.objects.all().first()
         self.slug = self.article.slug
@@ -49,6 +52,8 @@ class TestCommenting(base_class.BaseTest):
         self.comment_id = self.comment.data["comment"]["id"]
         self.reply_url = reverse(
             'comments:comment-reply', kwargs={'comment_pk': self.comment_id})
+        self.comment_detail_url = reverse("comments:comment-details",
+                                          kwargs={"pk": self.comment_id})
 
     def create_reply(self):
         self.reply = self.client.post(
@@ -102,8 +107,7 @@ class TestCommenting(base_class.BaseTest):
     def test_can_edit_comment_if_you_authored_it(self):
         self.create_comment()
         response = self.client.patch(
-            reverse("comments:comment-details",
-                    kwargs={"pk": self.comment_id}),
+            self.comment_detail_url,
             data=json.dumps({"body": "very true indeed!"}),
             content_type='application/json'
         )
@@ -354,3 +358,56 @@ class TestCommenting(base_class.BaseTest):
         self.assertIn('history_change_type', response.data['history'][0])
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
+
+    def test_user_can_comment_on_a_specific_part_of_an_article(self):
+        self.authenticate_test_user1()
+        response = self.client.post(self.comments_url,
+                                    data=comment_with_right_commenting_on_text,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            "Successfully posted comment" in response.data['message'])
+
+    def test_cannot_comment_on_blank_text(self):
+        self.authenticate_test_user1()
+        response = self.client.post(self.comments_url,
+                                    data=comment_with_empty_comment_on_text,
+                                    format='json')
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], "Could not create comment")
+        self.assertEqual(str(response.data['errors']['commenting_on'][0]),
+                         "This field may not be blank.")
+
+    def test_cannot_create_comment_on_text_not_in_article(self):
+        self.authenticate_test_user1()
+        response = self.client.post(self.comments_url,
+                                    data=comment_with_text_not_in_article,
+                                    format='json')
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], "Could not create comment")
+        self.assertEqual(str(response.data['errors']['commenting_on'][0]),
+                         "You cannot comment on text not in the article")
+
+    def test_cannot_update_comment_on_blank_text(self):
+        self.create_comment()
+        response = self.client.patch(self.comment_detail_url,
+                                     data=comment_with_empty_comment_on_text,
+                                     format='json')
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], "Could not update comment")
+        self.assertEqual(str(response.data['errors']['commenting_on'][0]),
+                         "This field may not be blank.")
+
+    def test_cannot_update_comment_with_text_not_in_article(self):
+        self.create_comment()
+        response = self.client.patch(self.comment_detail_url,
+                                     data=comment_with_text_not_in_article,
+                                     format='json')
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], "Could not update comment")
+        self.assertEqual(str(response.data['errors']['commenting_on'][0]),
+                         "You cannot comment on text not in the article")
