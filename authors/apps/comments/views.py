@@ -9,7 +9,6 @@ from rest_framework.renderers import JSONRenderer
 from .serializers import CommentSerializer, CommentReplySerializer
 from .models import Comment, CommentReply
 from ..profiles.models import Profile
-from .permissions import IsOwnerOfCommentOrReply
 from ..articles.models import Article
 from ..articles.utils import model_helpers as article_helpers
 from .utils import model_helpers
@@ -117,7 +116,8 @@ class CommentDetailApiView (GenericAPIView):
         )
         serializer.is_valid(raise_exception=True,
                             message="Could not update comment")
-        serializer.save()
+        if self.comment.body != self.data['body']:
+            serializer.save()
         return Response({"comment": serializer.data,
                          "message": "Successfully edited comment: {}".
                          format(pk),
@@ -261,8 +261,7 @@ class CommentEditHistoryAPIView(GenericAPIView):
     that a user created on a particular article
     """
     renderer_classes = (JSONRenderer,)
-    permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOfCommentOrReply)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, slug, pk):
         article = article_helpers.get_single_article_using_slug(slug)
@@ -278,7 +277,11 @@ class CommentEditHistoryAPIView(GenericAPIView):
                 "status": status.HTTP_404_NOT_FOUND
             }, status=status.HTTP_404_NOT_FOUND)
         comment = Comment.objects.get(pk=pk)
-        self.check_object_permissions(request, comment)
+        if comment.author.user != request.user:
+            return Response({
+                'message': "Access denied, you can't view edit history for a \
+comment didn't create"
+            }, status=status.HTTP_403_FORBIDDEN)
         return Response({
             "history": comment_history,
             "message": "edit history for comment with ID: {}".format(pk),
@@ -292,8 +295,7 @@ class CommentReplyEditHistoryAPIView(GenericAPIView):
     that a user created on a particular comment
     """
     renderer_classes = (JSONRenderer,)
-    permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOfCommentOrReply,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, comment_pk, pk):
         comment = model_helpers.get_single_comment_using_id(Comment,
@@ -313,7 +315,11 @@ class CommentReplyEditHistoryAPIView(GenericAPIView):
                 "status": status.HTTP_404_NOT_FOUND
             }, status=status.HTTP_404_NOT_FOUND)
         comment_reply = CommentReply.objects.get(pk=pk)
-        self.check_object_permissions(request, comment_reply)
+        if comment_reply.author.user != request.user:
+            return Response({
+                'message': "Access denied, you can't view edit history for a \
+comment reply you didn't create"
+            }, status=status.HTTP_403_FORBIDDEN)
         return Response({
             "history": comment_reply_history,
             "message": "edit history for comment with ID: {}".format(pk),
