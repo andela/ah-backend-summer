@@ -42,6 +42,13 @@ class TestCommenting(base_class.BaseTest):
             password='ia83naJS')
         self.client.force_authenticate(user=user2)
 
+    def authenticate_test_user3(self):
+        user3 = User.objects.create_user(
+            username='abcd12345',
+            email='jkl@abc.com',
+            password='ia83naJS')
+        self.client.force_authenticate(user=user3)
+
     def create_comment(self):
         self.authenticate_test_user1()
         self.comment = self.client.post(
@@ -54,6 +61,10 @@ class TestCommenting(base_class.BaseTest):
             'comments:comment-reply', kwargs={'comment_pk': self.comment_id})
         self.comment_detail_url = reverse("comments:comment-details",
                                           kwargs={"pk": self.comment_id})
+        self.like_comment_url = reverse(
+            'comments:comment-likes', kwargs={'pk': self.comment_id})
+        self.dislike_comment_url = reverse(
+            'comments:comment-dislikes', kwargs={'pk': self.comment_id})
 
     def create_reply(self):
         self.reply = self.client.post(
@@ -411,3 +422,251 @@ class TestCommenting(base_class.BaseTest):
         self.assertEqual(response.data['message'], "Could not update comment")
         self.assertEqual(str(response.data['errors']['commenting_on'][0]),
                          "You cannot comment on text not in the article")
+
+    def test_cannot_like_nonexistent_comment(self):
+        self.create_comment()
+        response = self.client.post(
+            reverse(
+                'comments:comment-likes', kwargs={'pk': self.comment_id + 1}),
+            content_type='application/json'
+        )
+        self.assertIn(
+            "does not exist!",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_cannot_get_like_status_nonexistent_comment(self):
+        self.create_comment()
+        response = self.client.get(
+            reverse(
+                'comments:comment-likes', kwargs={'pk': self.comment_id + 1}),
+            content_type='application/json'
+        )
+        self.assertIn(
+            "does not exist!",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_cannot_like_comment_you_authored(self):
+        self.create_comment()
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "you authored",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_can_like_comment_you_did_not_author(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "Success",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_can_get_like_status_of_comment(self):
+        self.create_comment()
+        response = self.client.get(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "Success",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_cannot_like_comment_more_than_once(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "already",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_like_comment_you_disliked(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "like and dislike",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_can_reverse_like_comment_you_liked(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        response = self.client.delete(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "reversed",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_cannot_reverse_like_comment_you_did_not_like(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.authenticate_test_user3()
+        response = self.client.delete(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "do not like",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_dislike_nonexistent_comment(self):
+        self.create_comment()
+        response = self.client.post(
+            reverse(
+                'comments:comment-dislikes',
+                kwargs={'pk': self.comment_id + 1}),
+            content_type='application/json'
+        )
+        self.assertIn(
+            "does not exist!",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_cannot_get_dislike_status_nonexistent_comment(self):
+        self.create_comment()
+        response = self.client.get(
+            reverse(
+                'comments:comment-dislikes',
+                kwargs={'pk': self.comment_id + 1}),
+            content_type='application/json'
+        )
+        self.assertIn(
+            "does not exist!",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_cannot_dislike_comment_you_authored(self):
+        self.create_comment()
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "you authored",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_can_dislike_comment_you_did_not_author(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "Success",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_can_get_dislike_status_of_comment(self):
+        self.create_comment()
+        response = self.client.get(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "Success",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_cannot_dislike_comment_more_than_once(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "already",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_dislike_comment_you_liked(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.like_comment_url,
+            content_type='application/json'
+        )
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "like and dislike",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_can_reverse_dislike_comment_you_disliked(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        response = self.client.delete(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "reversed",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_cannot_reverse_dislike_comment_you_did_not_dislike(self):
+        self.create_comment()
+        self.authenticate_test_user2()
+        response = self.client.post(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.authenticate_test_user3()
+        response = self.client.delete(
+            self.dislike_comment_url,
+            content_type='application/json'
+        )
+        self.assertIn(
+            "do not dislike",
+            response.data['message'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

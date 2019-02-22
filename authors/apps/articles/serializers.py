@@ -148,4 +148,4 @@ class ArticleReporterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Report
-        fields = ('reporter', 'article', 'reason',)
+        fields = ('id', 'reporter', 'article', 'reason',)

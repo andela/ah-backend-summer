@@ -19,6 +19,10 @@ class Comment(models.Model):
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     edit_history = HistoricalRecords()
+    liked_by = models.ManyToManyField(to=settings.AUTH_USER_MODEL,
+                                      related_name='liked_comments')
+    disliked_by = models.ManyToManyField(to=settings.AUTH_USER_MODEL,
+                                         related_name='disliked_comments')
 
     class Meta:
         """
@@ -36,6 +40,14 @@ class Comment(models.Model):
     def url(self):
         return settings.URL + reverse('comments:comment-details',
                                       kwargs={"pk": self.pk})
+
+    @property
+    def like_count(self):
+        return self.liked_by.count()
+
+    @property
+    def dislike_count(self):
+        return self.disliked_by.count()
 
 
 class CommentReply(models.Model):

@@ -13,6 +13,7 @@ from .permissions import IsOwnerOfCommentOrReply
 from ..articles.models import Article
 from ..articles.utils import model_helpers as article_helpers
 from .utils import model_helpers
+from .utils.model_helpers import LikeDislikeObject
 
 
 class CommentApiView (GenericAPIView):
@@ -42,11 +43,10 @@ class CommentApiView (GenericAPIView):
         return Response({
             "comments": serialized_data.data,
             "commentCount": comments.count(),
-            "status_message": (
+            "message": (
                 "Successfully returned comments on article: {}".format(slug)
-            )},
-            status=status.HTTP_200_OK
-        )
+            ),
+            'status': 200}, status=status.HTTP_200_OK)
 
     def post(self, request, slug):
         self.get_required_objects(request, slug)
@@ -64,7 +64,8 @@ class CommentApiView (GenericAPIView):
                          "message": (
                              "Successfully posted comment on article: {}".
                              format(slug)
-                         )}, status=status.HTTP_201_CREATED)
+                         ),
+                         'status': 201}, status=status.HTTP_201_CREATED)
 
 
 class CommentDetailApiView (GenericAPIView):
@@ -90,11 +91,14 @@ class CommentDetailApiView (GenericAPIView):
         """get the details of a comment"""
         self.get_required_objects(request, pk)
         serialized_data = self.serializer_class(self.comment)
-        return Response({"comment": serialized_data.data,
-                         "message": (
-                             f"Successfully returned details of comment: {pk}"
-                         )},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {"comment": serialized_data.data,
+             "message": (
+                 "Successfully returned details of comment: {}".format(
+                     pk)
+             ),
+             'status': 200},
+            status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
         self.get_required_objects(request, pk)
@@ -102,8 +106,9 @@ class CommentDetailApiView (GenericAPIView):
         if not self.is_author:
             return Response({
                 "response": "You can only edit a comment you authored",
-                "status_message": "Failed: Access denied"},
-                status=status.HTTP_403_FORBIDDEN)
+                            "status_message": "Failed: Access denied",
+                            'status': 403},
+                            status=status.HTTP_403_FORBIDDEN)
         serializer = self.serializer_class(
             self.comment,
             self.data,
@@ -114,8 +119,9 @@ class CommentDetailApiView (GenericAPIView):
                             message="Could not update comment")
         serializer.save()
         return Response({"comment": serializer.data,
-                         "message": "Successfully edited comment: {}".format(
-                             pk)},
+                         "message": "Successfully edited comment: {}".
+                         format(pk),
+                         'status': 201},
                         status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
@@ -124,11 +130,13 @@ class CommentDetailApiView (GenericAPIView):
         if not self.is_author:
             return Response({
                 "response": "You can only delete a comment you authored",
-                "message": "Failed: Access denied"},
-                status=status.HTTP_403_FORBIDDEN)
+                            "message": "Failed: Access denied",
+                            'status': 403},
+                            status=status.HTTP_403_FORBIDDEN)
         self.comment.delete()
         return Response({
-            "message": "Successfully deleted comment: {}".format(pk)},
+            "message": "Successfully deleted comment: {}".format(pk),
+            'status': 200},
             status=status.HTTP_200_OK)
 
 
@@ -161,10 +169,8 @@ class CommentReplyApiView(GenericAPIView):
             "repliesCount": replies.count(),
             "message": (
                 "Successfully returned replies to comment: {}".format(
-                    comment_pk)
-            )},
-            status=status.HTTP_200_OK
-        )
+                    comment_pk)),
+                'status': 200}, status=status.HTTP_200_OK)
 
     def post(self, request, comment_pk):
         """Make a reply to a comment"""
@@ -177,7 +183,8 @@ class CommentReplyApiView(GenericAPIView):
                          "message": (
                              "Successfully posted reply to comment: {}".format(
                                  comment_pk)
-                         )},
+                         ),
+                         'status': 201},
                         status=status.HTTP_201_CREATED)
 
 
@@ -203,11 +210,14 @@ class CommentReplyDetailApiView(GenericAPIView):
         self.get_required_objects(request, pk)
         """get the details of a reply"""
         serialized_data = self.serializer_class(self.reply)
-        return Response({"reply": serialized_data.data,
-                         "message": (
-                             f"Successfully returned details of reply: {pk}"
-                         )},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {"reply": serialized_data.data,
+             "message": (
+                 "Successfully returned details of reply: {}".format(
+                     pk)
+             ),
+             'status': 200},
+            status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
         self.get_required_objects(request, pk)
@@ -215,15 +225,19 @@ class CommentReplyDetailApiView(GenericAPIView):
         if not self.is_author:
             return Response({
                 "response": "You can only edit a reply you authored",
-                "message": "Failed: Access denied"},
-                status=status.HTTP_403_FORBIDDEN)
-        serializer = self.serializer_class(self.reply, self.data, partial=True)
+                            "message": "Failed: Access denied",
+                            'status': 403},
+                            status=status.HTTP_403_FORBIDDEN)
+        serializer = self.serializer_class(self.reply, self.data, partial=True,
+                                           context={
+                                               'request': request})
         serializer.is_valid(raise_exception=True)
         if self.reply.body != self.data['body']:
             serializer.save()
         return Response({"reply": serializer.data,
-                         "message": "Successfully edited reply: {}".format(
-                             pk)},
+                         "message": "Successfully edited reply: {}".format(pk),
+                         'status': 201
+                         },
                         status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
@@ -232,11 +246,13 @@ class CommentReplyDetailApiView(GenericAPIView):
         if not self.is_author:
             return Response({
                 "response": "You can only delete a reply you authored",
-                "message": "Failed: Access denied"},
-                status=status.HTTP_403_FORBIDDEN)
+                            "message": "Failed: Access denied",
+                            'status': 403},
+                            status=status.HTTP_403_FORBIDDEN)
         self.reply.delete()
         return Response({
-            "message": "Successfully deleted reply: {}".format(pk)},
+            "message": "Successfully deleted reply: {}".format(pk),
+            'status': 200},
             status=status.HTTP_200_OK)
 
 
@@ -304,3 +320,51 @@ class CommentReplyEditHistoryAPIView(GenericAPIView):
             "comment_reply_edit_count": len(comment_reply_history) - 1,
             "status": status.HTTP_200_OK
         }, status=status.HTTP_200_OK)
+
+
+class LikeCommentApiView(GenericAPIView):
+    """
+    The ApiView class handles the operations of a user liking a comment and
+    retrieving the like status of a specific comment
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, pk):
+        """Method to get like status of comment"""
+        action = LikeDislikeObject(request, Comment, pk, "comment", "like")
+        data, status_code = action.get_status_of_action_for_obj()
+        return Response(data, status=status_code)
+
+    def post(self, request, pk):
+        action = LikeDislikeObject(request, Comment, pk, "comment", "like")
+        data, status_code = action.perform_action_on_object()
+        return Response(data, status=status_code)
+
+    def delete(self, request, pk):
+        action = LikeDislikeObject(request, Comment, pk, "comment", "like")
+        data, status_code = action.undo_action_on_object()
+        return Response(data, status=status_code)
+
+
+class DislikeCommentApiView(GenericAPIView):
+    """
+    The ApiView class handles the operations of a user disliking a comment and
+    retrieving the like status of a specific comment
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, pk):
+        """Method to get dislike status of comment"""
+        action = LikeDislikeObject(request, Comment, pk, "comment", "dislike")
+        data, status_code = action.get_status_of_action_for_obj()
+        return Response(data, status=status_code)
+
+    def post(self, request, pk):
+        action = LikeDislikeObject(request, Comment, pk, "comment", "dislike")
+        data, status_code = action.perform_action_on_object()
+        return Response(data, status=status_code)
+
+    def delete(self, request, pk):
+        action = LikeDislikeObject(request, Comment, pk, "comment", "dislike")
+        data, status_code = action.undo_action_on_object()
+        return Response(data, status=status_code)
