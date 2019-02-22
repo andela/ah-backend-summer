@@ -140,3 +140,12 @@ class ReadStatsSerializer(serializers.ModelSerializer):
                   'article',
                   'read_date',)
         read_only_fields = ("user", "article")
+
+
+class ArticleReporterSerializer(serializers.ModelSerializer):
+    reporter = ProfileSerializers.ProfileSerializer(read_only=True)
+    article = ArticleSerializer(read_only=True)
+
+    class Meta:
+        model = models.Report
+        fields = ('reporter', 'article', 'reason',)

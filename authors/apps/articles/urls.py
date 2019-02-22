@@ -6,6 +6,8 @@ app_name = "articles"
 
 urlpatterns = [
     path('tags', views.ArticleTagsApiView.as_view(), name='tags'),
+    path('reports', views.ReportsAPIView.as_view(), name='reports'),
+    path('reports/<id>', views.ReportAPIView.as_view(), name='report'),
     path('<slug>/like', views.LikeDislikeArticleAPIView.as_view(),
          kwargs={'action': 'like'},
          name="like-article"),
@@ -30,4 +32,6 @@ urlpatterns = [
          name='article-rates'),
     path('<slug>/bookmark', views.ArticleBookmarkAPIView.as_view(),
          name='article-bookmark'),
+    path('<slug>/report', views.ReportArticleAPIView.as_view(),
+         name='report-article'),
 ]
