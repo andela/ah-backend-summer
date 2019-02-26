@@ -429,8 +429,9 @@ class ReportsAPIView(generics.GenericAPIView):
     def get(self, request):
         if request.user.is_superuser:
             reports = models.Report.objects.all()
-        user = request.user.profile
-        reports = user.report_set.all()
+        else:
+            user = request.user.profile
+            reports = user.report_set.all()
         context = {"request": request}
         serializer = self.serializer_class(reports, many=True, context=context)
         response_data = {"reports": serializer.data}
