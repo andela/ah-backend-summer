@@ -114,6 +114,12 @@ class LikeDislikeObject():
         elif self.action == "dislike":
             self.obj.disliked_by.remove(self.request.user)
 
+    def remove_opposite_action(self):
+        if self.action == "like":
+            self.obj.disliked_by.remove(self.request.user)
+        elif self.action == "dislike":
+            self.obj.liked_by.remove(self.request.user)
+
     def get_status_of_action_for_obj(self):
         if self.obj:
             action_status = self.action_is_active()
@@ -158,12 +164,14 @@ with pk: {self.pk} does not exist!",
             status_code = status.HTTP_400_BAD_REQUEST
 
         elif self.opposite_is_active() is True:
+            self.remove_opposite_action()
+            self.add_action()
             data = {
-                "message": f"Failed! You cannot like and \
-dislike the same {self.object_type}",
-                "status": 400
+                "message": f"Success! You have changed your action \
+to {self.action} {self.object_type} with pk {self.pk}",
+                "status": 201
             }
-            status_code = status.HTTP_400_BAD_REQUEST
+            status_code = status.HTTP_201_CREATED
 
         elif self.action_is_active() is False and self.is_author is False:
             self.add_action()
