@@ -41,8 +41,9 @@ class BaseTest(APITestCase):
         sent link.
         """
         self.register_test_user()
-        activation_link = (mail.outbox[0].body.split('\n')).pop(1)
-        url = activation_link.split("testserver").pop(1)
+        token = (mail.outbox[0].body.split("\n").pop(1).split(
+            'email-verification/')[1])
+        url = reverse('authentication:activate', args=[token])
         return self.client.get(url, content_type='application/json')
 
     def register_and_login_test_user(self):
