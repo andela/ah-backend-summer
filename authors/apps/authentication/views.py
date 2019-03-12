@@ -72,9 +72,8 @@ class RegistrationAPIView(GenericAPIView):
         response_data:- holds a 'mail-sent' message and the route to
         the activation view.
         """
-        verification_route = reverse('authentication:activate', args=[token])
-        domain = f'http://{current_site.domain}'
-        link = f'{domain}{verification_route}'
+        domain = f"{os.getenv('FRONT_END_URL')}"
+        link = f'{domain}email-verification/{token}'
         # send_mail(subject, message, from_email, to_list, fail_silently=True)
         subject = "Activation for your Author's Haven account"
         message = f'Thank you, Please Activate your account below.\n{link}'
@@ -122,7 +121,9 @@ class AccountActivateAPIView(GenericAPIView):
             user.save()
             resp = {
                 "msg": "Your account is activated, enjoy",
-                "user": user.email
+                "user": user.email,
+                "token": user.token,
+                "username": user.username
             }
             return Response(resp, status=status.HTTP_200_OK)
         elif user.is_active:
