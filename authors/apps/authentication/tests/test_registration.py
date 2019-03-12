@@ -59,8 +59,9 @@ class RegistrationTest(BaseTest):
         Test user can not activate an already activated account.
         """
         self.register_test_user()
-        activation_link = (mail.outbox[0].body.split('\n')).pop(1)
-        url = activation_link.split("testserver").pop(1)
+        token = (mail.outbox[0].body.split("\n").pop(1).split(
+            'email-verification/')[1])
+        url = reverse('authentication:activate', args=[token])
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
