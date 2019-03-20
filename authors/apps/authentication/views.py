@@ -293,8 +293,8 @@ class PasswordResetRequestAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_email = user.get("email", None)
         PasswordResetManager(request).send_password_reset_email(user_email)
-        msg = "An email has been sent to your \
-            mailbox with instructions to reset your password"
+        msg = ("An email has been sent to your "
+            "mailbox with instructions to reset your password")
         return Response(
             {
                 "message": msg,

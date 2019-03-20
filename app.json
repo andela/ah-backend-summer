@@ -34,6 +34,9 @@
     },
     "CLOUDAMQP_URL": {
       "required": true
+    },
+    "FRONT_END_URL": {
+      "required": true
     }
   },
   "formation": {},
