@@ -84,11 +84,12 @@ class ArticleSerializer (serializers.ModelSerializer):
 class ArticleRatingSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
+    average_ratings = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Rating
         fields = (
-            "rate_score", "title", "author"
+            "rate_score", "title", "author", "average_ratings"
         )
         extra_kwargs = {
             "rate_score": {"max_value": 5, "min_value": 1}
@@ -99,6 +100,9 @@ class ArticleRatingSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         return obj.article.author.user.username
+
+    def get_average_ratings(self, obj):
+        return obj.article.average_ratings
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
