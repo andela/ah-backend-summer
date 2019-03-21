@@ -194,7 +194,7 @@ class CommentReplyDetailApiView(GenericAPIView):
     deletion of a single reply.
     """
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    serializer_class = CommentSerializer
+    serializer_class = CommentReplySerializer
     renderer_classes = (JSONRenderer,)
 
     def get_required_objects(self, request, pk):
