@@ -1,6 +1,7 @@
 from ..authentication.models import UserManager, User
 from rest_framework import serializers
 import jwt
+import os
 import datetime
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -44,10 +45,12 @@ class PasswordResetManager:
             settings.SECRET_KEY,
             algorithm='HS256'
         )
+        domain = f"{os.getenv('FRONT_END_URL')}"
+        token = self.encoded_token.decode('utf-8')
+        link = f'{domain}reset-password/{token}/'
         self.context = {
             'username': user.username,
-            'reset_link': self.password_reset_url +
-            self.encoded_token.decode('utf-8') + '/'
+            'reset_link': link
         }
         self.email_body = render_to_string(
             'password_reset_email.txt', self.context)
