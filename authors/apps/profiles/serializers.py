@@ -1,14 +1,20 @@
 from rest_framework import serializers
 from .models import Profile
+from authors.apps.articles.models import Article
 
 
 class ProfileSerializer(serializers.ModelSerializer):
     following = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
+    followings = serializers.SerializerMethodField()
+    number_of_followers = serializers.SerializerMethodField()
+    number_of_following = serializers.SerializerMethodField() 
 
     class Meta:
         model = Profile
         fields = ("username", "first_name", "last_name", "bio", "image",
-                  "following", "date_of_birth")
+                  "following", "date_of_birth", "followers", "followings", 
+                  "number_of_followers", "number_of_following")
 
     def get_following(self, instance):
         """
@@ -23,6 +29,22 @@ class ProfileSerializer(serializers.ModelSerializer):
         follower = request.user.profile
         followee = instance
         return follower.is_following(followee)
+
+    def get_followers(self, instance):
+        queryset = instance.followed_by.all()
+        followers = [follower.username for follower in queryset]
+        return followers
+
+    def get_followings(self, instance):
+        queryset = instance.follows.all()
+        followings = [following.username for following in queryset]
+        return followings
+
+    def get_number_of_following(self, instance):
+        return len(instance.follows.all())
+
+    def get_number_of_followers(self, instance):
+        return len(instance.followed_by.all())
 
     def validate(self, data):
         """

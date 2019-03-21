@@ -244,6 +244,9 @@ class ArticleRatingAPIView(generics.GenericAPIView):
         article = get_single_article_using_slug(slug)
         user = request.user
 
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         rate = request.data.get('rate_score', {})
         if rate > 5 or rate < 1:
             return Response({
@@ -251,18 +254,27 @@ class ArticleRatingAPIView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
         if article.author.pk == user.pk:
-            return Response({
-                'errors': 'Author can not rate their own article'},
-                status=status.HTTP_403_FORBIDDEN)
-
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
+            message = 'Author can not rate their own article'
+            data = {
+                "title": article.title,
+                "author": article.author.username,
+                "average_ratings": article.average_ratings
+            }
+            return Response({'articles': data,
+                             'message': message},
+                            status=status.HTTP_403_FORBIDDEN)
 
         try:
             Rating.objects.get(user=user.pk, article_id=article.pk)
-            return Response(
-                {'message': 'You already rated this article'},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            message = 'You already rated this article'
+            data = {
+                "title": article.title,
+                "author": article.author.username,
+                "average_ratings": article.average_ratings
+            }
+            return Response({'articles': data,
+                             'message': message},
+                            status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         except Rating.DoesNotExist:
             serializer.save(user=user, article=article)
             rate_data = serializer.data

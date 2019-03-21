@@ -40,7 +40,7 @@ class TestRatingModel(base_class.BaseTest):
             format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("Author can not rate their own article",
-                      response.data.get('errors'))
+                      response.data.get('message'))
 
     # integration tests for all modules under rating articles start here
 
