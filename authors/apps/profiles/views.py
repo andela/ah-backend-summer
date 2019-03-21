@@ -144,7 +144,7 @@ class ProfileFollowingAPIView(generics.GenericAPIView):
     def get(self, request):
         user = self.request.user
         profile = user.profile
-        queryset = Profile.objects.get(user__email=user).follows.all()
+        queryset = Profile.objects.get(user__email=user.email).follows.all()
 
         following = []
         for followee in queryset:
@@ -169,7 +169,7 @@ class ProfileFollowersAPIView(generics.GenericAPIView):
     def get(self, request):
         user = self.request.user
         profile = user.profile
-        queryset = Profile.objects.get(user__email=user).followed_by.all()
+        queryset = Profile.objects.get(user__email=user.email).followed_by.all()
 
         followers = []
         for follower in queryset:
