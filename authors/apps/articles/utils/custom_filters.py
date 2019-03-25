@@ -15,7 +15,9 @@ class ArticleFilter(FilterSet):
                                        lookup_expr='icontains')
     tag = rest_framework.CharFilter('tag_list',
                                     lookup_expr='icontains')
+    favorited_by = rest_framework.CharFilter('favorited_by__username',
+                                    lookup_expr='icontains')
 
     class Meta:
         model = Article
-        fields = ("title", "author", "tag", )
+        fields = ("title", "author", "tag", "favorited_by")
