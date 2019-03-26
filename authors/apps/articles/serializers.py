@@ -16,6 +16,8 @@ class ArticleSerializer (serializers.ModelSerializer):
     """
     author = ProfileSerializers.ProfileSerializer(read_only=True)
     favorited = serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
+    disliked = serializers.SerializerMethodField()
     average_ratings = serializers.IntegerField(required=False)
     read_time = serializers.SerializerMethodField()
     share_links = serializers.SerializerMethodField()
@@ -29,6 +31,8 @@ class ArticleSerializer (serializers.ModelSerializer):
             "description",
             "created_at",
             "updated_at",
+            "liked",
+            "disliked",
             "body",
             "author",
             "image",
@@ -67,6 +71,28 @@ class ArticleSerializer (serializers.ModelSerializer):
             "author": {"read_only": True},
             "slug": {"read_only": True}
         }
+
+    def get_liked(self, obj):
+        """
+        This method returns True if the logged in user liked the article
+        otherwise it returns False.
+        """
+        if self.context["request"].user.is_anonymous:
+            return False
+        if self.context["request"].user in obj.liked_by.all():
+            return True
+        return False
+
+    def get_disliked(self, obj):
+        """
+        This method returns True if the logged in user disliked the article
+        otherwise it returns False.
+        """
+        if self.context["request"].user.is_anonymous:
+            return False
+        if self.context["request"].user in obj.disliked_by.all():
+            return True
+        return False
 
     def get_read_time(self, obj):
         return get_article_read_time(obj.body)
