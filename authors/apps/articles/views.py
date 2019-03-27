@@ -285,7 +285,6 @@ class ArticleRatingAPIView(generics.GenericAPIView):
 
 
 class ArticleTagsApiView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request):
         tags = get_all_available_tags()
