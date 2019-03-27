@@ -296,7 +296,7 @@ class TestArticleLikeDislikeArticleViews(base_class.BaseTest):
     def test_get_facebook_share_link(self):
         """User can share an article in a facebook post"""
         response = self.client.get(self.article_url(self.article.slug))
-        url = f'http://testserver/api/v1/articles/{self.article.slug}'
+        url = f'https://ah-frontend-summer-staging.herokuapp.com/articles/{self.article.slug}'
         self.assertEqual(response.data['share_links']['facebook'],
                          'https://www.facebook.com/sharer/\
 sharer.php?u='+url)
@@ -307,7 +307,7 @@ sharer.php?u='+url)
         title = quote(self.article.title)
         author = quote(self.article.author.username)
         space = quote(' ')
-        url = f'http://testserver/api/v1/articles/{self.article.slug}'
+        url = f'https://ah-frontend-summer-staging.herokuapp.com/articles/{self.article.slug}'
         append_to_url = f'{title}{space}by{space}{author}{space}{url}'
         self.assertEqual(response.data['share_links']['twitter'],
                          'https://twitter.com/home?status='+append_to_url)
@@ -315,7 +315,7 @@ sharer.php?u='+url)
     def test_get_google_plus_share_link(self):
         """User can share an article in a google plus post"""
         response = self.client.get(self.article_url(self.article.slug))
-        url = f'http://testserver/api/v1/articles/{self.article.slug}'
+        url = f'https://ah-frontend-summer-staging.herokuapp.com/articles/{self.article.slug}'
         self.assertEqual(response.data['share_links']['google_plus'],
                          'https://plus.google.com/share?url='+url)
 
@@ -325,6 +325,6 @@ sharer.php?u='+url)
         subject = self.article.title
         message = quote('I am sharing this article, ')
         body = (f"""{message}'{subject}'%20\
-http://testserver/api/v1/articles/{self.article.slug}""")
+https://ah-frontend-summer-staging.herokuapp.com/articles/{self.article.slug}""")
         self.assertEqual(response.data['share_links']['email'],
                          f'mailto:?&subject={subject}&body={body}')
