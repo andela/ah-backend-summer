@@ -22,6 +22,7 @@ class ArticleSerializer (serializers.ModelSerializer):
     read_time = serializers.SerializerMethodField()
     share_links = serializers.SerializerMethodField()
     read_stats = serializers.SerializerMethodField()
+    has_reported = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Article
@@ -46,6 +47,7 @@ class ArticleSerializer (serializers.ModelSerializer):
             "read_time",
             "share_links",
             'read_stats',
+            'has_reported'
         )
         read_only_fields = (
             'author',
@@ -105,6 +107,14 @@ class ArticleSerializer (serializers.ModelSerializer):
         if request.user.username != obj.author.username:
             return None
         return models.ReadStats.objects.filter(article=obj).count()
+
+    def get_has_reported(self, obj):
+        request = self.context.get('request')
+        if request.user.is_anonymous:
+            return False
+        reports = obj.report_set.all()
+        reporters = [report.reporter.username for report in reports]
+        return True if request.user.username in reporters else False
 
 
 class ArticleRatingSerializer(serializers.ModelSerializer):
