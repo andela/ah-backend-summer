@@ -69,11 +69,12 @@ def get_sharing_links(obj, request):
 
     """
     share_links = dict()
-    url = request.build_absolute_uri(reverse('articles:article-details',
-                                             kwargs={'slug': obj.slug}))
     title = quote(obj.title)
+    slug = quote(obj.slug)
     author = quote(obj.author.username)
     space = quote(' ')
+    url = request.build_absolute_uri(
+        f"https://ah-frontend-summer-staging.herokuapp.com/articles/{slug}")
     append_to_url = f'{title}{space}by{space}{author}{space}{url}'
 
     share_links['google_plus'] = f"https://plus.google.com/share?url\

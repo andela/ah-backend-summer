@@ -388,8 +388,7 @@ class ReportArticleAPIView(generics.GenericAPIView):
         email_admin sends an email to the admin of the site when a report on
         an article has been made
         """
-        article_url = reverse('articles:article-details',
-                              kwargs={'slug': article.slug})
+        article_url = f'https://ah-frontend-summer-staging.herokuapp.com/articles/{article.slug}'
         article_url = request.build_absolute_uri(article_url)
         body = f"""Article {article_url} has been reported by
         {reporter.username} for the reason {request.data["reason"]}"""
