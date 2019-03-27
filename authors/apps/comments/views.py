@@ -36,9 +36,11 @@ class CommentApiView (GenericAPIView):
         """Retrieve all comments on an article"""
         self.get_required_objects(request, slug)
         comments = Comment.objects.filter(article=self.article)
-        serialized_data = self.serializer_class(comments, many=True,
-                                                context={
-                                                    'request': request})
+        serialized_data = self.serializer_class(
+            comments,
+            context={'request': request},
+            many=True
+        )
         return Response({
             "comments": serialized_data.data,
             "commentCount": comments.count(),
@@ -52,7 +54,8 @@ class CommentApiView (GenericAPIView):
         self.get_author_profile(request)
         serializer = self.serializer_class(
             data=self.data,
-            context={'article': self.article}
+            context={'article': self.article,
+            "request": request}
         )
         serializer.is_valid(
             raise_exception=True,
@@ -89,7 +92,11 @@ class CommentDetailApiView (GenericAPIView):
     def get(self, request, pk):
         """get the details of a comment"""
         self.get_required_objects(request, pk)
-        serialized_data = self.serializer_class(self.comment)
+        serialized_data = self.serializer_class(
+            self.comment,
+            context={"request": request}
+        )
+
         return Response(
             {"comment": serialized_data.data,
              "message": (
@@ -112,7 +119,9 @@ class CommentDetailApiView (GenericAPIView):
             self.comment,
             self.data,
             partial=True,
-            context={'article': self.article}
+            context={'article': self.article,
+                    "request": request
+            }
         )
         serializer.is_valid(raise_exception=True,
                             message="Could not update comment")

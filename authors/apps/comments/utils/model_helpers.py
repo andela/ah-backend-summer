@@ -124,6 +124,7 @@ class LikeDislikeObject():
         if self.obj:
             action_status = self.action_is_active()
             data = {
+                "id": self.pk,
                 f'{self.action} status:': action_status,
                 "message": f"Success! {self.object_type} pk': {self.pk}",
                 "status": 200
@@ -149,6 +150,7 @@ with pk: {self.pk} does not exist!",
 
         elif self.action_is_active() is True:
             data = {
+                "id": self.pk,
                 "message": f"Failed! You already {self.action} \
 {self.object_type} with pk {self.pk}",
                 "status": 400
@@ -167,6 +169,7 @@ with pk: {self.pk} does not exist!",
             self.remove_opposite_action()
             self.add_action()
             data = {
+                "id": self.pk,
                 "message": f"Success! You have changed your action \
 to {self.action} {self.object_type} with pk {self.pk}",
                 "status": 201
@@ -176,6 +179,7 @@ to {self.action} {self.object_type} with pk {self.pk}",
         elif self.action_is_active() is False and self.is_author is False:
             self.add_action()
             data = {
+                "id": self.pk,
                 "message": f"Success! You have a added a \
 {self.action} to {self.object_type} with pk {self.pk}",
                 "status": 201
@@ -194,6 +198,7 @@ with pk: {self.pk} does not exist!",
 
         elif self.action_is_active() is False:
             data = {
+                "id": self.pk,
                 "message": f" Failed! You do not {self.action} \
 {self.object_type} with pk {self.pk}",
                 "status": 400
@@ -202,6 +207,7 @@ with pk: {self.pk} does not exist!",
 
         elif self.is_author is True:
             data = {
+                "id": self.pk,
                 "message": f"Failed! You cannot reverse \
 {self.action} on {self.object_type} you didn't author",
                 "status": 400
@@ -211,6 +217,7 @@ with pk: {self.pk} does not exist!",
         elif self.action_is_active() is True:
             self.remove_action()
             data = {
+                "id": self.pk,
                 "message": f"Success! You have reversed \
 {self.action} action on {self.object_type} with pk {self.pk}",
                 "status": 200

@@ -14,6 +14,8 @@ class CommentSerializer(custom_serializers.ModelSerializer):
     as read-only since these fields data is auto generated
     """
     author = profile_serializers.ProfileSerializer(read_only=True)
+    like_status = serializers.SerializerMethodField()
+    dislike_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -26,13 +28,16 @@ class CommentSerializer(custom_serializers.ModelSerializer):
             "id",
             'commenting_on',
             "like_count",
-            "dislike_count"
+            "dislike_count",
+            "like_status",
+            "dislike_status"
+
         )
         read_only_fields = (
             "article",
             "author",
             "created_at",
-            'updated_at'
+            'updated_at',
             "id"
         )
         extra_kwargs = {
@@ -54,6 +59,28 @@ class CommentSerializer(custom_serializers.ModelSerializer):
             )
 
         return data
+
+    def get_like_status(self, obj):
+        """
+        Check if the logged in user has liked the comment-
+        """
+
+        if self.context["request"].user.is_anonymous:
+            return False
+        if self.context["request"].user in obj.liked_by.all():
+            return True
+        return False
+
+    def get_dislike_status(self, obj):
+        """
+       Check if the logged in user has disliked the comment
+        """
+
+        if self.context["request"].user.is_anonymous:
+            return False
+        if self.context["request"].user in obj.disliked_by.all():
+            return True
+        return False
 
 
 class CommentReplySerializer(serializers.ModelSerializer):
