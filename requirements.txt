@@ -12,7 +12,7 @@ coverage==4.5.2
 coveralls==1.5.1
 cssselect==1.0.3
 dj-database-url==0.5.0
-Django==2.1.5
+Django==2.1.11
 django-celery-results==1.0.4
 django-cloudinary-storage==0.2.3
 django-cors-headers==2.5.0
